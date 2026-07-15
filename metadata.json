@@ -1,0 +1,8 @@
+{
+  "name": "SoFIA Operativa",
+  "description": "Copiloto Inteligente de Crédito Hipotecario y CRM operativo para asesores y mesa de control de CREDIDIEZ.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
