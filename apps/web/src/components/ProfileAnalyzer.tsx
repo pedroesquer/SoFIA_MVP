@@ -159,8 +159,8 @@ export default function ProfileAnalyzer({
     else riskLevel = 'Crítico';
 
     // 5. Evaluate viable and rejected banks
-    const viableBanks: typeof diagnostics.viableBanks = [];
-    const rejectedBanks: typeof diagnostics.rejectedBanks = [];
+    const viableBanks: NonNullable<typeof diagnostics>['viableBanks'] = [];
+    const rejectedBanks: NonNullable<typeof diagnostics>['rejectedBanks'] = [];
 
     rates.forEach(rate => {
       const bankPayment = calculateMonthlyPayment(requestedAmount, rate.interestRate, termYears);

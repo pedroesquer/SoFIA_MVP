@@ -1,15 +1,25 @@
+import { z } from 'zod';
+import { getSofiaAgent } from './agent/sofiaAgent';
 import express from 'express';
 import path from 'path';
 import dotenv from 'dotenv';
-import { createServer as createViteServer } from 'vite';
 import { GoogleGenAI } from '@google/genai';
 
-dotenv.config();
+dotenv.config({
+  path: [
+    path.resolve(process.cwd(), '.env'),
+    path.resolve(process.cwd(), '../../.env'),
+  ],
+});
 
 const app = express();
-const PORT = 3000;
+const PORT = Number(process.env.PORT || 3001);
 
-app.use(express.json());
+app.use(express.json({ limit: '100kb' }));
+
+app.get('/api/health', (_req, res) => {
+  res.json({ status: 'ok', service: 'sofia-api' });
+});
 
 // Lazy-initialization helper for GoogleGenAI
 let aiClient: GoogleGenAI | null = null;
@@ -142,7 +152,87 @@ ${tableRows}
 }
 
 // ENDPOINTS
+const agentChatRequestSchema = z.object({
+  messages: z
+    .array(
+      z.object({
+        sender: z.enum(['user', 'sofia']),
+        text: z.string().trim().min(1).max(4000),
+      }),
+    )
+    .min(1)
+    .max(30),
+});
 
+function extractAgentText(content: unknown): string {
+  if (typeof content === 'string') {
+    return content;
+  }
+
+  if (Array.isArray(content)) {
+    return content
+      .map((block) => {
+        if (
+          typeof block === 'object' &&
+          block !== null &&
+          'text' in block &&
+          typeof block.text === 'string'
+        ) {
+          return block.text;
+        }
+
+        return '';
+      })
+      .filter(Boolean)
+      .join('\n');
+  }
+
+  return '';
+}
+
+// SoFIA Agent con LangChain
+app.post('/api/sofia/agent', async (req, res) => {
+  const parsedRequest = agentChatRequestSchema.safeParse(req.body);
+
+  if (!parsedRequest.success) {
+    return res.status(400).json({
+      error: 'La solicitud del chat no tiene el formato esperado.',
+      details: parsedRequest.error.flatten(),
+    });
+  }
+
+  try {
+    const agent = getSofiaAgent();
+
+    const result = await agent.invoke({
+      messages: parsedRequest.data.messages.map((message) => ({
+        role: message.sender === 'user' ? 'user' : 'assistant',
+        content: message.text,
+      })),
+    });
+
+    const lastMessage = result.messages.at(-1);
+    const text = extractAgentText(lastMessage?.content);
+
+    if (!text) {
+      throw new Error('El agente no devolvió contenido de texto.');
+    }
+
+    return res.json({
+      text,
+      isAgent: true,
+    });
+  } catch (error) {
+    console.error(
+      'Error ejecutando el agente SoFIA:',
+      error instanceof Error ? error.message : error,
+    );
+
+    return res.status(502).json({
+      error: 'SoFIA no pudo procesar la solicitud en este momento.',
+    });
+  }
+});
 // 1. SoFIA Intelligent Chat Endpoint
 app.post('/api/sofia/chat', async (req, res) => {
   const { messages, clientContext, ratesContext } = req.body;
@@ -259,25 +349,9 @@ Usa un tono sumamente sofisticado y experto en corretaje hipotecario.`;
   }
 });
 
-// VITE MIDDLEWARE SETUP FOR DEV & PUBLIC PRODUCTION SERVING
-
-async function startServer() {
-  if (process.env.NODE_ENV !== 'production') {
-    const vite = await createViteServer({
-      server: { middlewareMode: true },
-      appType: 'spa',
-    });
-    app.use(vite.middlewares);
-  } else {
-    const distPath = path.join(process.cwd(), 'dist');
-    app.use(express.static(distPath));
-    app.get('*', (req, res) => {
-      res.sendFile(path.join(distPath, 'index.html'));
-    });
-  }
-
+function startServer() {
   app.listen(PORT, '0.0.0.0', () => {
-    console.log(`[SoFIA Operativa Server] Corriendo en puerto ${PORT}`);
+    console.log(`[SoFIA API] Corriendo en puerto ${PORT}`);
   });
 }
 

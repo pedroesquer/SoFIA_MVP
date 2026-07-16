@@ -2,13 +2,13 @@ import React, { useState, useRef, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { ChatMessage, User, MortgageFile, BankRate } from '../types';
-import { 
-  Send, 
-  Sparkles, 
-  Clock, 
-  HelpCircle, 
-  Trash2, 
-  FileText, 
+import {
+  Send,
+  Sparkles,
+  Clock,
+  HelpCircle,
+  Trash2,
+  FileText,
   Compass,
   ArrowRight,
   ShieldCheck
@@ -68,35 +68,13 @@ Aquí tienes algunas consultas frecuentes que puedo resolver en segundos:`,
     setIsLoading(true);
 
     try {
-      const response = await fetch('/api/sofia/chat', {
+      const response = await fetch('/api/sofia/agent', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          messages: [...messages, userMsg],
-          clientContext: activeFile ? {
-            name: activeFile.name,
-            age: activeFile.age,
-            economicActivity: activeFile.economicActivity,
-            monthlyIncome: activeFile.monthlyIncome,
-            monthlyExpenses: activeFile.monthlyExpenses,
-            otherDebts: activeFile.otherDebts,
-            requestedAmount: activeFile.requestedAmount,
-            propertyValue: activeFile.propertyValue,
-            termYears: activeFile.termYears,
-            buroScore: activeFile.buro.score,
-            buroAuthStatus: activeFile.buro.authStatus
-          } : null,
-          ratesContext: rates.map(r => ({
-            bankName: r.bankName,
-            productName: r.productName,
-            interestRate: r.interestRate,
-            cat: r.cat,
-            commission: r.commission,
-            requirements: r.requirements,
-            status: r.status
-          }))
+          messages: [...messages, userMsg]
         })
       });
 
@@ -105,7 +83,7 @@ Aquí tienes algunas consultas frecuentes que puedo resolver en segundos:`,
       }
 
       const data = await response.json();
-      
+
       const sofiaMsg: ChatMessage = {
         id: `msg-${Date.now()}-sofia`,
         sender: 'sofia',
@@ -116,7 +94,7 @@ Aquí tienes algunas consultas frecuentes que puedo resolver en segundos:`,
       setMessages(prev => [...prev, sofiaMsg]);
     } catch (error) {
       console.error('Error in chat request:', error);
-      
+
       // Fallback simulated message
       const fallbackMsg: ChatMessage = {
         id: `msg-${Date.now()}-sofia-error`,
@@ -183,7 +161,7 @@ Pregúntame sobre tasas hipotecarias, viabilidad de prospectos o estrategias com
             </p>
           </div>
         </div>
-        <button 
+        <button
           onClick={clearChat}
           className="p-2 text-slate-400 hover:text-rose-600 hover:bg-slate-100 rounded-lg transition-all"
           title="Limpiar Conversación"
@@ -195,8 +173,8 @@ Pregúntame sobre tasas hipotecarias, viabilidad de prospectos o estrategias com
       {/* Historial de Mensajes */}
       <div className="flex-1 overflow-y-auto p-6 space-y-6">
         {messages.map((message) => (
-          <div 
-            key={message.id} 
+          <div
+            key={message.id}
             className={`flex gap-4 ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
           >
             {message.sender === 'sofia' && (
@@ -204,11 +182,10 @@ Pregúntame sobre tasas hipotecarias, viabilidad de prospectos o estrategias com
                 SF
               </div>
             )}
-            <div className={`max-w-[85%] rounded-xl p-4 shadow-sm leading-relaxed text-sm ${
-              message.sender === 'user' 
-                ? 'bg-slate-850 text-white rounded-br-none' 
+            <div className={`max-w-[85%] rounded-xl p-4 shadow-sm leading-relaxed text-sm ${message.sender === 'user'
+                ? 'bg-slate-850 text-white rounded-br-none'
                 : 'bg-slate-50 border border-slate-150 text-slate-850 rounded-bl-none'
-            }`}>
+              }`}>
               <div className="markdown-body">
                 <ReactMarkdown remarkPlugins={[remarkGfm]}>
                   {message.text}
