@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { ChatMessage, User, MortgageFile, BankRate } from '../types';
+import { authenticatedFetch } from '../lib/api';
 import {
   Send,
   Sparkles,
@@ -68,7 +69,7 @@ Aquí tienes algunas consultas frecuentes que puedo resolver en segundos:`,
     setIsLoading(true);
 
     try {
-      const response = await fetch('/api/sofia/agent', {
+      const response = await authenticatedFetch('/api/sofia/agent', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -183,10 +184,10 @@ Pregúntame sobre tasas hipotecarias, viabilidad de prospectos o estrategias com
               </div>
             )}
             <div className={`max-w-[85%] rounded-xl p-4 shadow-sm leading-relaxed text-sm ${message.sender === 'user'
-                ? 'bg-slate-850 text-white rounded-br-none'
-                : 'bg-slate-50 border border-slate-150 text-slate-850 rounded-bl-none'
+                ? 'bg-slate-900 text-white rounded-br-none'
+                : 'bg-slate-50 border border-slate-150 text-slate-900 rounded-bl-none'
               }`}>
-              <div className="markdown-body">
+              <div className={`markdown-body ${message.sender === 'user' ? 'user-message-markdown' : ''}`}>
                 <ReactMarkdown remarkPlugins={[remarkGfm]}>
                   {message.text}
                 </ReactMarkdown>

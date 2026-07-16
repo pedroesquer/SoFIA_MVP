@@ -4,6 +4,7 @@ import express from 'express';
 import path from 'path';
 import dotenv from 'dotenv';
 import { GoogleGenAI } from '@google/genai';
+import { authenticateRequest } from './auth/authMiddleware';
 
 dotenv.config({
   path: [
@@ -191,7 +192,7 @@ function extractAgentText(content: unknown): string {
 }
 
 // SoFIA Agent con LangChain
-app.post('/api/sofia/agent', async (req, res) => {
+app.post('/api/sofia/agent', authenticateRequest, async (req, res) => {
   const parsedRequest = agentChatRequestSchema.safeParse(req.body);
 
   if (!parsedRequest.success) {
@@ -234,7 +235,7 @@ app.post('/api/sofia/agent', async (req, res) => {
   }
 });
 // 1. SoFIA Intelligent Chat Endpoint
-app.post('/api/sofia/chat', async (req, res) => {
+app.post('/api/sofia/chat', authenticateRequest, async (req, res) => {
   const { messages, clientContext, ratesContext } = req.body;
   const userMessage = messages[messages.length - 1]?.text || '';
 
@@ -293,7 +294,7 @@ Aquí tienes el contexto operativo relevante:
 });
 
 // 2. SoFIA Analyze Simulations Endpoint
-app.post('/api/sofia/analyze-simulations', async (req, res) => {
+app.post('/api/sofia/analyze-simulations', authenticateRequest, async (req, res) => {
   const { client, simulations } = req.body;
 
   if (!client || !simulations || simulations.length === 0) {

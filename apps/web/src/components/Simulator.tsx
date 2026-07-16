@@ -3,6 +3,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { MortgageFile, BankRate, SimulatedOffer, User } from '../types';
 import { generateSimulationForBank } from '../mockData';
+import { authenticatedFetch } from '../lib/api';
 import { 
   Check, 
   Sparkles, 
@@ -147,7 +148,7 @@ export default function Simulator({ currentUser, rates, activeFile, onUpdateSimu
     }, 2000);
 
     try {
-      const response = await fetch('/api/sofia/analyze-simulations', {
+      const response = await authenticatedFetch('/api/sofia/analyze-simulations', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

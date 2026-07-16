@@ -102,3 +102,11 @@
   font-size: 0.75rem;
   color: #065f46; /* emerald 800 */
 }
+
+/* User messages have a dark bubble, so Markdown emphasis must inherit white. */
+.user-message-markdown h1,
+.user-message-markdown h2,
+.user-message-markdown h3,
+.user-message-markdown strong {
+  color: inherit;
+}
