@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { User, MortgageFile, BankRate, SimulatedOffer } from './types';
 import { INITIAL_BANK_RATES, INITIAL_MORTGAGE_FILES } from './mockData';
+import { supabase } from './lib/supabase';
 
 // Modular Components
 import Dashboard from './components/Dashboard';
@@ -15,16 +16,16 @@ import CenterAdmin from './components/CenterAdmin';
 import GuidedFlow from './components/GuidedFlow';
 
 // Icons
-import { 
-  Building, 
-  Sparkles, 
-  BookOpen, 
-  LayoutDashboard, 
-  Folder, 
-  TrendingUp, 
-  Zap, 
-  Award, 
-  Lock, 
+import {
+  Building,
+  Sparkles,
+  BookOpen,
+  LayoutDashboard,
+  Folder,
+  TrendingUp,
+  Zap,
+  Award,
+  Lock,
   User as UserIcon,
   LogOut,
   Sliders,
@@ -38,6 +39,8 @@ export default function App() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loginError, setLoginError] = useState('');
+  const [authLoading, setAuthLoading] = useState(true);
+  const [loginLoading, setLoginLoading] = useState(false);
 
   // Core App State
   const [files, setFiles] = useState<MortgageFile[]>(INITIAL_MORTGAGE_FILES);
@@ -48,55 +51,133 @@ export default function App() {
 
   const activeFile = files.find(f => f.id === activeFileId);
 
-  // Authentication logic
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoginError('');
 
-    if (!email.trim() || !password.trim()) {
-      setLoginError('Por favor, llena todos los campos corporativos.');
-      return;
-    }
+  const loadUserProfile = async (userId: string) => {
+    const { data: profile, error } = await supabase
+      .from('profiles')
+      .select('email, name, role, sede')
+      .eq('id', userId)
+      .single();
 
-    // Role-based credential verification
-    let role: User['role'] = 'Asesor';
-    let name = 'Asesor de Crédito';
-    let sede = 'Sede Centro Monterrey';
+    if (error || !profile) {
+      console.error('Error cargando perfil:', error);
 
-    const cleanEmail = email.toLowerCase().trim();
+      await supabase.auth.signOut();
+      setCurrentUser(null);
 
-    if (cleanEmail === 'pedro.garza@credidiez.mx') {
-      role = 'Superadministrador';
-      name = 'Pedro Garza';
-      sede = 'Corporativo San Pedro';
-    } else if (cleanEmail === 'sofia.martinez@credidiez.mx') {
-      role = 'Administrador de Centro';
-      name = 'Sofía Martínez';
-      sede = 'Sede Centro Monterrey';
-    } else if (cleanEmail === 'carlos.mendoza@credidiez.mx') {
-      role = 'Asesor Senior';
-      name = 'Carlos Mendoza';
-      sede = 'Sede Centro Monterrey';
-    } else if (cleanEmail.endsWith('@credidiez.mx')) {
-      // General broker
-      const parts = cleanEmail.split('@')[0].split('.');
-      name = parts.map(p => p.charAt(0).toUpperCase() + p.slice(1)).join(' ');
-      role = 'Asesor';
-      sede = 'Sede Centro Monterrey';
-    } else {
-      setLoginError('Correo institucional no reconocido en el padrón de CREDIDIEZ.');
-      return;
+      throw new Error(
+        'Tu cuenta existe, pero no tiene un perfil operativo válido.',
+      );
     }
 
     setCurrentUser({
-      email: cleanEmail,
-      name,
-      role,
-      sede
+      email: profile.email,
+      name: profile.name,
+      role: profile.role as User['role'],
+      sede: profile.sede,
     });
   };
+  useEffect(() => {
+    let mounted = true;
 
-  const handleLogout = () => {
+    const initializeAuth = async () => {
+      try {
+        const {
+          data: { session },
+          error,
+        } = await supabase.auth.getSession();
+
+        if (error) {
+          throw error;
+        }
+
+        if (session?.user && mounted) {
+          await loadUserProfile(session.user.id);
+        }
+      } catch (error) {
+        console.error('Error restaurando sesión:', error);
+
+        if (mounted) {
+          setCurrentUser(null);
+        }
+      } finally {
+        if (mounted) {
+          setAuthLoading(false);
+        }
+      }
+    };
+
+    initializeAuth();
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'SIGNED_OUT' && mounted) {
+        setCurrentUser(null);
+      }
+    });
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
+  }, []);
+  // Authentication logic
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    setLoginError('');
+    setLoginLoading(true);
+
+    const cleanEmail = email.trim().toLowerCase();
+
+    if (!cleanEmail || !password) {
+      setLoginError('Por favor, llena todos los campos corporativos.');
+      setLoginLoading(false);
+      return;
+    }
+
+    try {
+      const { data, error } =
+        await supabase.auth.signInWithPassword({
+          email: cleanEmail,
+          password,
+        });
+
+      if (error) {
+        console.error('Error de Supabase Auth:', error);
+        setLoginError('Correo o contraseña incorrectos.');
+        return;
+      }
+
+      if (!data.user) {
+        setLoginError('No fue posible obtener los datos del usuario.');
+        return;
+      }
+
+      await loadUserProfile(data.user.id);
+      setPassword('');
+    } catch (error) {
+      console.error('Error iniciando sesión:', error);
+
+      setLoginError(
+        error instanceof Error
+          ? error.message
+          : 'No fue posible iniciar sesión.',
+      );
+    } finally {
+      setLoginLoading(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    const { error } = await supabase.auth.signOut();
+
+    if (error) {
+      console.error('Error cerrando sesión:', error);
+      return;
+    }
+
     setCurrentUser(null);
     setEmail('');
     setPassword('');
@@ -123,6 +204,19 @@ export default function App() {
   };
 
   // Login Screen Render
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="text-center space-y-3">
+          <div className="w-10 h-10 mx-auto border-4 border-emerald-100 border-t-emerald-600 rounded-full animate-spin" />
+
+          <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+            Verificando sesión
+          </p>
+        </div>
+      </div>
+    );
+  }
   if (!currentUser) {
     return (
       <div className="min-h-screen bg-slate-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8 font-sans" id="login-layout">
@@ -177,29 +271,14 @@ export default function App() {
 
               <button
                 type="submit"
+                disabled={loginLoading}
                 className="w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold rounded-lg text-xs tracking-wider uppercase shadow-sm cursor-pointer transition-all duration-150"
               >
-                Ingresar al Sistema
+                {loginLoading ? 'Verficando ...' : 'Iniciar Sesión'}
               </button>
             </form>
 
-            <div className="pt-4 border-t border-slate-100 text-center space-y-2">
-              <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Credenciales de Pruebas de Roles:</span>
-              <div className="grid grid-cols-2 gap-2 text-[10px] font-semibold text-slate-500 bg-slate-50 p-2.5 rounded border border-slate-150">
-                <div className="text-left">
-                  <p className="text-slate-700">carlos.mendoza@credidiez.mx</p>
-                  <p className="text-[8px] text-slate-400 font-bold uppercase mt-0.5">Asesor Senior</p>
-                </div>
-                <div className="text-left">
-                  <p className="text-slate-700">sofia.martinez@credidiez.mx</p>
-                  <p className="text-[8px] text-slate-400 font-bold uppercase mt-0.5">Directora Sede / Admin</p>
-                </div>
-                <div className="text-left col-span-2 pt-1 border-t border-slate-100">
-                  <p className="text-slate-700">pedro.garza@credidiez.mx</p>
-                  <p className="text-[8px] text-slate-400 font-bold uppercase mt-0.5">Superadministrador</p>
-                </div>
-              </div>
-            </div>
+            
           </div>
         </div>
       </div>
@@ -208,7 +287,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-slate-50/60 flex text-slate-800 font-sans leading-relaxed text-sm antialiased" id="main-panel-layout">
-      
+
       {/* 1. SIDEBAR NAVIGATION */}
       <aside className="w-60 bg-white border-r border-slate-200 flex flex-col justify-between" id="sidebar">
         <div>
@@ -224,7 +303,7 @@ export default function App() {
           {/* Menú Principal */}
           <nav className="p-4 space-y-1">
             <span className="block text-[9px] font-extrabold text-slate-400 uppercase tracking-widest px-3 mb-2.5">Navegación</span>
-            
+
             {[
               { id: 'dashboard', label: 'Dashboard General', icon: LayoutDashboard },
               { id: 'crm', label: 'Expedientes CRM', icon: Folder },
@@ -242,11 +321,10 @@ export default function App() {
                     setActiveTab(item.id as any);
                     if (item.id !== 'guided') setGuidedFlowFileId(null);
                   }}
-                  className={`w-full flex items-center gap-3 px-3 py-2 rounded-md text-xs font-semibold transition-colors cursor-pointer ${
-                    isActive 
-                      ? 'text-emerald-600 bg-emerald-50 font-semibold' 
-                      : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800'
-                  }`}
+                  className={`w-full flex items-center gap-3 px-3 py-2 rounded-md text-xs font-semibold transition-colors cursor-pointer ${isActive
+                    ? 'text-emerald-600 bg-emerald-50 font-semibold'
+                    : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800'
+                    }`}
                 >
                   <Icon className={`h-4.5 w-4.5 ${isActive ? 'text-emerald-600' : 'text-slate-400'}`} />
                   <span>{item.label}</span>
@@ -260,11 +338,10 @@ export default function App() {
                 <span className="block text-[9px] font-extrabold text-slate-400 uppercase tracking-widest px-3 mb-2">Administración</span>
                 <button
                   onClick={() => setActiveTab('rates')}
-                  className={`w-full flex items-center gap-3 px-3 py-2 rounded-md text-xs font-semibold transition-colors cursor-pointer ${
-                    activeTab === 'rates' 
-                      ? 'text-emerald-600 bg-emerald-50 font-semibold' 
-                      : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800'
-                  }`}
+                  className={`w-full flex items-center gap-3 px-3 py-2 rounded-md text-xs font-semibold transition-colors cursor-pointer ${activeTab === 'rates'
+                    ? 'text-emerald-600 bg-emerald-50 font-semibold'
+                    : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800'
+                    }`}
                 >
                   <Sliders className={`h-4.5 w-4.5 ${activeTab === 'rates' ? 'text-emerald-600' : 'text-slate-400'}`} />
                   <span>Administrador de Tasas</span>
@@ -276,11 +353,10 @@ export default function App() {
             {currentUser.role === 'Superadministrador' && (
               <button
                 onClick={() => setActiveTab('center')}
-                className={`w-full flex items-center gap-3 px-3 py-2 rounded-md text-xs font-semibold transition-colors cursor-pointer ${
-                  activeTab === 'center' 
-                    ? 'text-emerald-600 bg-emerald-50 font-semibold' 
-                    : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800'
-                }`}
+                className={`w-full flex items-center gap-3 px-3 py-2 rounded-md text-xs font-semibold transition-colors cursor-pointer ${activeTab === 'center'
+                  ? 'text-emerald-600 bg-emerald-50 font-semibold'
+                  : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800'
+                  }`}
               >
                 <Users className={`h-4.5 w-4.5 ${activeTab === 'center' ? 'text-emerald-600' : 'text-slate-400'}`} />
                 <span>Administración de Centro</span>
@@ -306,7 +382,7 @@ export default function App() {
             <span>v2.4 - Julio 2026</span>
             <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
           </div>
-          
+
           <button
             onClick={handleLogout}
             className="w-full flex items-center gap-2.5 px-3 py-2 mt-3 text-xs font-bold text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
@@ -319,22 +395,22 @@ export default function App() {
 
       {/* 2. MAIN CORE STAGE */}
       <div className="flex-1 flex flex-col min-w-0 bg-slate-50" id="main-content-stage">
-        
+
         {/* HEADER BAR */}
         <header className="h-16 bg-white border-b border-slate-200 px-8 flex items-center justify-between shrink-0" id="header">
           <div className="flex items-center gap-4">
             <h1 className="text-lg font-semibold text-slate-800">
-              {activeTab === 'dashboard' ? 'Dashboard General' : 
-               activeTab === 'crm' ? 'Expedientes CRM' : 
-               activeTab === 'kanban' ? 'Tablero Kanban' : 
-               activeTab === 'guided' ? 'Estructurador Guiado' : 
-               activeTab === 'chat' ? 'Copiloto SoFIA' : 
-               activeTab === 'library' ? 'Biblioteca Financiera' : 
-               activeTab === 'rates' ? 'Administrador de Tasas' : 'Administración de Centro'}
+              {activeTab === 'dashboard' ? 'Dashboard General' :
+                activeTab === 'crm' ? 'Expedientes CRM' :
+                  activeTab === 'kanban' ? 'Tablero Kanban' :
+                    activeTab === 'guided' ? 'Estructurador Guiado' :
+                      activeTab === 'chat' ? 'Copiloto SoFIA' :
+                        activeTab === 'library' ? 'Biblioteca Financiera' :
+                          activeTab === 'rates' ? 'Administrador de Tasas' : 'Administración de Centro'}
             </h1>
             <div className="h-4 w-px bg-slate-200"></div>
             <span className="text-xs text-slate-400 font-medium px-2.5 py-0.5 bg-slate-50 border border-slate-200 rounded-full">
-              Sede Centro Monterrey
+              {currentUser.sede}
             </span>
           </div>
 
@@ -353,7 +429,7 @@ export default function App() {
                 ))}
               </select>
             </div>
-            
+
             {activeFile && (
               <div className="p-2 bg-emerald-50 text-emerald-600 rounded-lg border border-emerald-100 flex items-center justify-center shadow-sm" title="Caso Activo Listo">
                 <ShieldCheck className="h-4.5 w-4.5" />
@@ -365,10 +441,10 @@ export default function App() {
         {/* CORE VIEWS SHELL */}
         <main className="flex-1 overflow-y-auto p-8 max-w-7xl w-full mx-auto" id="stage-viewport">
           {activeTab === 'dashboard' && (
-            <Dashboard 
-              currentUser={currentUser} 
-              files={files} 
-              rates={rates} 
+            <Dashboard
+              currentUser={currentUser}
+              files={files}
+              rates={rates}
               onSelectFile={(id) => {
                 setActiveFileId(id);
                 setActiveTab('crm');
@@ -382,9 +458,9 @@ export default function App() {
           )}
 
           {activeTab === 'crm' && (
-            <CrmFiles 
-              currentUser={currentUser} 
-              files={files} 
+            <CrmFiles
+              currentUser={currentUser}
+              files={files}
               onSelectFile={setActiveFileId}
               onUpdateFile={handleUpdateFile}
               onStartGuidedFlow={handleStartGuidedFlow}
@@ -392,9 +468,9 @@ export default function App() {
           )}
 
           {activeTab === 'kanban' && (
-            <KanbanBoard 
-              currentUser={currentUser} 
-              files={files} 
+            <KanbanBoard
+              currentUser={currentUser}
+              files={files}
               onUpdateFile={handleUpdateFile}
               onSelectFile={(id) => {
                 setActiveFileId(id);
@@ -404,10 +480,10 @@ export default function App() {
           )}
 
           {activeTab === 'guided' && (
-            <GuidedFlow 
-              currentUser={currentUser} 
-              files={files} 
-              rates={rates} 
+            <GuidedFlow
+              currentUser={currentUser}
+              files={files}
+              rates={rates}
               initialFileId={guidedFlowFileId}
               onUpdateFile={handleUpdateFile}
               onFinishFlow={() => {
@@ -418,33 +494,33 @@ export default function App() {
           )}
 
           {activeTab === 'chat' && (
-            <SofiaChat 
-              currentUser={currentUser} 
-              activeFile={activeFile} 
-              rates={rates} 
+            <SofiaChat
+              currentUser={currentUser}
+              activeFile={activeFile}
+              rates={rates}
             />
           )}
 
           {activeTab === 'library' && (
-            <FinancialLibrary 
-              currentUser={currentUser} 
-              rates={rates} 
+            <FinancialLibrary
+              currentUser={currentUser}
+              rates={rates}
               onNavigateToAdmin={() => setActiveTab('rates')}
             />
           )}
 
           {activeTab === 'rates' && (
-            <RateAdmin 
-              currentUser={currentUser} 
-              rates={rates} 
+            <RateAdmin
+              currentUser={currentUser}
+              rates={rates}
               onAddRate={handleAddRate}
               onUpdateRate={handleUpdateRate}
             />
           )}
 
           {activeTab === 'center' && (
-            <CenterAdmin 
-              currentUser={currentUser} 
+            <CenterAdmin
+              currentUser={currentUser}
             />
           )}
         </main>
