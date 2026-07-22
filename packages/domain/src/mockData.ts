@@ -306,6 +306,7 @@ export function generateSimulationForBank(
 export const INITIAL_MORTGAGE_FILES: MortgageFile[] = [
   {
     id: 'file-1',
+    advisorId: 'carlos.mendoza@credidiez.mx',
     name: 'Sofía Ramos Elizondo',
     email: 'sofia.ramos@gmail.com',
     phone: '811-234-5678',
@@ -351,6 +352,7 @@ export const INITIAL_MORTGAGE_FILES: MortgageFile[] = [
   },
   {
     id: 'file-2',
+    advisorId: 'carlos.mendoza@credidiez.mx',
     name: 'Alejandro Garza Sada',
     email: 'alejandro.garza@hotmail.com',
     phone: '818-987-6543',
@@ -468,6 +470,7 @@ export const INITIAL_MORTGAGE_FILES: MortgageFile[] = [
   },
   {
     id: 'file-3',
+    advisorId: 'carlos.mendoza@credidiez.mx',
     name: 'Mariana Villarreal Cantú',
     email: 'mariana.v@villarreal.mx',
     phone: '812-444-5566',
@@ -538,6 +541,7 @@ export const INITIAL_MORTGAGE_FILES: MortgageFile[] = [
   },
   {
     id: 'file-4',
+    advisorId: 'carlos.mendoza@credidiez.mx',
     name: 'Roberto Cantú Cantú',
     email: 'roberto.cantu@coporativos.mx',
     phone: '333-111-2233',
@@ -608,6 +612,7 @@ export const INITIAL_MORTGAGE_FILES: MortgageFile[] = [
   },
   {
     id: 'file-5',
+    advisorId: 'carlos.mendoza@credidiez.mx',
     name: 'Diana Leticia Ruiz',
     email: 'diana_ruiz@guadalajara.com',
     phone: '331-555-8899',

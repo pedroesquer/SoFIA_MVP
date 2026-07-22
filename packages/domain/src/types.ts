@@ -1,6 +1,7 @@
 export type UserRole = 'Asesor' | 'Asesor Senior' | 'Administrador de Centro' | 'Superadministrador';
 
 export interface User {
+  id: string;
   email: string;
   name: string;
   role: UserRole;
@@ -64,6 +65,7 @@ export type CRMStage = 'Prospecto' | 'En análisis' | 'Docs integrados' | 'Envia
 
 export interface MortgageFile {
   id: string;
+  advisorId: string;
   name: string;
   email: string;
   phone: string;

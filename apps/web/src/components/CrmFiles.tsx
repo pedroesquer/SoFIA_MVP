@@ -1,16 +1,16 @@
 import React, { useState } from 'react';
 import { MortgageFile, User, Document, DocumentStatus, BuroAuthStatus } from '../types';
-import { 
-  Search, 
-  Filter, 
-  FileText, 
-  ChevronRight, 
-  X, 
-  User as UserIcon, 
-  Folder, 
-  ShieldCheck, 
-  Plus, 
-  TrendingUp, 
+import {
+  Search,
+  Filter,
+  FileText,
+  ChevronRight,
+  X,
+  User as UserIcon,
+  Folder,
+  ShieldCheck,
+  Plus,
+  TrendingUp,
   MoreVertical,
   Briefcase,
   Calendar,
@@ -31,20 +31,24 @@ interface CrmFilesProps {
   onSelectFile: (fileId: string) => void;
   onUpdateFile: (fileId: string, updatedFields: Partial<MortgageFile>) => void;
   onStartGuidedFlow: (fileId: string) => void;
+  onAddFile: (
+    file: Omit<MortgageFile, 'id'>,
+  ) => Promise<MortgageFile>;
 }
 
-export default function CrmFiles({ 
-  currentUser, 
-  files, 
-  onSelectFile, 
-  onUpdateFile, 
+export default function CrmFiles({
+  currentUser,
+  files,
+  onSelectFile,
+  onUpdateFile,
+  onAddFile,
   onStartGuidedFlow
 }: CrmFilesProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedStage, setSelectedStage] = useState('Todos');
   const [selectedFileId, setSelectedFileId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'resumen' | 'docs' | 'buro' | 'asistente' | 'envio' | 'logs'>('resumen');
-  
+
   // New client form states
   const [showAddModal, setShowAddModal] = useState(false);
   const [newName, setNewName] = useState('');
@@ -54,6 +58,7 @@ export default function CrmFiles({
   const [newPropertyValue, setNewPropertyValue] = useState(3200000);
   const [newCreditType, setNewCreditType] = useState('Adquisición');
   const [newIncome, setNewIncome] = useState(60000);
+  const [creatingClient, setCreatingClient] = useState(false);
 
   // Filter files based on roles and search
   const visibleFiles = files.filter(f => {
@@ -70,7 +75,7 @@ export default function CrmFiles({
     if (!allowed) return false;
 
     // Search & Stage filtering
-    const matchesSearch = 
+    const matchesSearch =
       f.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       f.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
       f.phone.includes(searchQuery);
@@ -115,7 +120,7 @@ export default function CrmFiles({
 
   const uploadDocSuccess = (docId: string, fileName: string) => {
     if (!activeFile) return;
-    
+
     const updatedDocs = activeFile.documents.map(d => {
       if (d.id === docId) {
         return {
@@ -222,67 +227,109 @@ export default function CrmFiles({
     alert(`Copiado al portapapeles: ${label}`);
   };
 
-  const createNewClient = () => {
+  const createNewClient = async () => {
     if (!newName || !newEmail || !newPhone) {
       alert('Por favor, llena los campos básicos obligatorios.');
       return;
     }
 
-    const newFile: MortgageFile = {
-      id: `file-${Date.now()}`,
-      name: newName,
-      email: newEmail,
-      phone: newPhone,
-      broker: currentUser.email,
-      sede: currentUser.sede || 'Sede Centro Monterrey',
-      requestedAmount: newRequestedAmount,
-      propertyValue: newPropertyValue,
-      termYears: 20,
-      creditType: newCreditType,
-      monthlyIncome: newIncome,
-      monthlyExpenses: Math.round(newIncome * 0.3),
-      otherDebts: 0,
-      age: 35,
-      economicActivity: 'Asalariado',
-      jobTenureMonths: 24,
-      observations: 'Nuevo cliente registrado mediante consola corporativa SoFIA.',
-      stage: 'Prospecto',
-      priority: 'Alta',
-      nextAction: 'Iniciar flujo guiado o consulta de Buró',
-      lastAnalysisDate: new Date().toISOString().split('T')[0],
-      documents: [
-        { id: 'doc-1', name: 'Identificación oficial', status: 'Pendiente' },
-        { id: 'doc-2', name: 'Comprobante de domicilio', status: 'Pendiente' },
-        { id: 'doc-3', name: 'Estados de cuenta', status: 'Pendiente' },
-        { id: 'doc-4', name: 'Reporte de Buró', status: 'Pendiente' },
-        { id: 'doc-5', name: 'Constancia de Situación Fiscal', status: 'Pendiente' },
-        { id: 'doc-6', name: 'Comprobante de ingresos', status: 'Pendiente' },
-        { id: 'doc-7', name: 'Autorización de consulta de Buró firmada', status: 'Pendiente' }
-      ],
-      buro: {
-        authStatus: 'Autorización pendiente'
-      },
-      simulatedOffers: [],
-      logs: [
-        {
-          id: `log-${Date.now()}`,
-          user: currentUser.name,
-          action: 'Registro e ingreso de cliente nuevo',
-          timestamp: new Date().toISOString()
-        }
-      ]
-    };
+    try {
+      setCreatingClient(true);
 
-    // add to parent state
-    onSelectFile(newFile.id);
-    files.unshift(newFile); // temporary prepend
-    setSelectedFileId(newFile.id);
-    setShowAddModal(false);
-    
-    // reset form
-    setNewName('');
-    setNewEmail('');
-    setNewPhone('');
+      const newFile: Omit<MortgageFile, 'id'> = {
+        advisorId: currentUser.id,
+        name: newName.trim(),
+        email: newEmail.trim().toLowerCase(),
+        phone: newPhone.trim(),
+        broker: currentUser.email,
+        sede: currentUser.sede || 'Sede Centro Monterrey',
+        requestedAmount: newRequestedAmount,
+        propertyValue: newPropertyValue,
+        termYears: 20,
+        creditType: newCreditType,
+        monthlyIncome: newIncome,
+        monthlyExpenses: Math.round(newIncome * 0.3),
+        otherDebts: 0,
+        age: 35,
+        economicActivity: 'Asalariado',
+        jobTenureMonths: 24,
+        observations:
+          'Nuevo cliente registrado mediante consola corporativa SoFIA.',
+        stage: 'Prospecto',
+        priority: 'Alta',
+        nextAction: 'Iniciar flujo guiado o consulta de Buró',
+        lastAnalysisDate: new Date().toISOString().split('T')[0],
+        documents: [
+          {
+            id: crypto.randomUUID(),
+            name: 'Identificación oficial',
+            status: 'Pendiente',
+          },
+          {
+            id: crypto.randomUUID(),
+            name: 'Comprobante de domicilio',
+            status: 'Pendiente',
+          },
+          {
+            id: crypto.randomUUID(),
+            name: 'Estados de cuenta',
+            status: 'Pendiente',
+          },
+          {
+            id: crypto.randomUUID(),
+            name: 'Reporte de Buró',
+            status: 'Pendiente',
+          },
+          {
+            id: crypto.randomUUID(),
+            name: 'Constancia de Situación Fiscal',
+            status: 'Pendiente',
+          },
+          {
+            id: crypto.randomUUID(),
+            name: 'Comprobante de ingresos',
+            status: 'Pendiente',
+          },
+          {
+            id: crypto.randomUUID(),
+            name: 'Autorización de consulta de Buró firmada',
+            status: 'Pendiente',
+          },
+        ],
+        buro: {
+          authStatus: 'Autorización pendiente',
+        },
+        simulatedOffers: [],
+        logs: [
+          {
+            id: crypto.randomUUID(),
+            user: currentUser.name,
+            action: 'Registro e ingreso de cliente nuevo',
+            timestamp: new Date().toISOString(),
+          },
+        ],
+      };
+
+      const createdFile = await onAddFile(newFile);
+
+      onSelectFile(createdFile.id);
+      setSelectedFileId(createdFile.id);
+      setShowAddModal(false);
+
+      setNewName('');
+      setNewEmail('');
+      setNewPhone('');
+    } catch (error) {
+      console.error('Error registrando cliente:', error);
+
+      alert(
+        error instanceof Error
+          ? error.message
+          : 'No fue posible registrar al cliente.',
+      );
+    } finally {
+      setCreatingClient(false);
+    }
   };
 
   return (
@@ -299,7 +346,7 @@ export default function CrmFiles({
             className="w-full text-xs font-medium bg-slate-50 border border-slate-250 rounded-lg pl-10 pr-4 py-2.5 outline-none focus:bg-white focus:border-emerald-500 transition-all text-slate-800"
           />
         </div>
-        
+
         <div className="flex gap-2">
           <div className="flex items-center gap-1.5 text-xs text-slate-500 bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5">
             <Filter className="h-3.5 w-3.5" />
@@ -319,7 +366,7 @@ export default function CrmFiles({
             </select>
           </div>
 
-          <button 
+          <button
             onClick={() => setShowAddModal(true)}
             className="flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-emerald-600 rounded-lg hover:bg-emerald-700 transition-all shadow-sm cursor-pointer"
           >
@@ -363,13 +410,12 @@ export default function CrmFiles({
                     </td>
                     <td className="px-5 py-3">
                       <div className="flex flex-col gap-1 items-start">
-                        <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full border ${
-                          file.stage === 'Aprobado' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
+                        <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full border ${file.stage === 'Aprobado' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
                           file.stage === 'Rechazado' ? 'bg-rose-50 text-rose-700 border-rose-200' :
-                          file.stage === 'Enviado a banco' ? 'bg-blue-50 text-blue-700 border-blue-200' :
-                          file.stage === 'Docs integrados' ? 'bg-indigo-50 text-indigo-700 border-indigo-200' :
-                          file.stage === 'En análisis' ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-slate-100 text-slate-500 border-slate-200'
-                        }`}>
+                            file.stage === 'Enviado a banco' ? 'bg-blue-50 text-blue-700 border-blue-200' :
+                              file.stage === 'Docs integrados' ? 'bg-indigo-50 text-indigo-700 border-indigo-200' :
+                                file.stage === 'En análisis' ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-slate-100 text-slate-500 border-slate-200'
+                          }`}>
                           {file.stage}
                         </span>
                         <span className={`text-[9px] font-semibold ${file.priority === 'Alta' ? 'text-rose-500' : 'text-slate-400'}`}>
@@ -382,7 +428,7 @@ export default function CrmFiles({
                       <p className="font-semibold text-slate-700 truncate">{file.nextAction}</p>
                     </td>
                     <td className="px-5 py-3 text-center">
-                      <button 
+                      <button
                         onClick={() => {
                           setSelectedFileId(file.id);
                           onSelectFile(file.id);
@@ -424,7 +470,7 @@ export default function CrmFiles({
                 </div>
                 <p className="text-[11px] text-slate-500 mt-1">Folio: CRED-{activeFile.id.split('-')[1] || activeFile.id.substr(5, 5).toUpperCase()} · Broker Responsable: {activeFile.broker}</p>
               </div>
-              <button 
+              <button
                 onClick={() => setSelectedFileId(null)}
                 className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-all"
               >
@@ -445,11 +491,10 @@ export default function CrmFiles({
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id as any)}
-                  className={`px-3.5 py-3 text-xs font-bold tracking-tight outline-none border-b-2 transition-all cursor-pointer ${
-                    activeTab === tab.id 
-                      ? 'border-emerald-600 text-emerald-700 font-extrabold' 
-                      : 'border-transparent text-slate-500 hover:text-slate-800'
-                  }`}
+                  className={`px-3.5 py-3 text-xs font-bold tracking-tight outline-none border-b-2 transition-all cursor-pointer ${activeTab === tab.id
+                    ? 'border-emerald-600 text-emerald-700 font-extrabold'
+                    : 'border-transparent text-slate-500 hover:text-slate-800'
+                    }`}
                 >
                   {tab.label}
                 </button>
@@ -458,7 +503,7 @@ export default function CrmFiles({
 
             {/* Contenido del Drawer */}
             <div className="flex-1 overflow-y-auto p-6 space-y-6">
-              
+
               {/* TAB 1: RESUMEN PERFIL */}
               {activeTab === 'resumen' && (
                 <div className="space-y-6">
@@ -508,7 +553,7 @@ export default function CrmFiles({
                   {/* Acciones Rápidas del expediente */}
                   <div className="pt-4 border-t border-slate-100 flex gap-3">
                     {activeFile.stage === 'Prospecto' && (
-                      <button 
+                      <button
                         onClick={() => {
                           setSelectedFileId(null);
                           onStartGuidedFlow(activeFile.id);
@@ -540,36 +585,33 @@ export default function CrmFiles({
                     {activeFile.documents.map((doc) => {
                       const isDragActive = dragActive === doc.id;
                       return (
-                        <div 
+                        <div
                           key={doc.id}
                           onDragEnter={(e) => handleDrag(e, doc.id)}
                           onDragOver={(e) => handleDrag(e, doc.id)}
                           onDragLeave={(e) => handleDrag(e, doc.id)}
                           onDrop={(e) => handleDrop(e, doc.id)}
-                          className={`border rounded-lg p-3.5 transition-all ${
-                            doc.status === 'Validado' ? 'bg-emerald-50/15 border-emerald-250' :
+                          className={`border rounded-lg p-3.5 transition-all ${doc.status === 'Validado' ? 'bg-emerald-50/15 border-emerald-250' :
                             doc.status === 'En revisión' ? 'bg-indigo-50/10 border-indigo-200' :
-                            doc.status === 'Rechazado' ? 'bg-rose-50/10 border-rose-200' : 'bg-white border-slate-200 hover:border-slate-300'
-                          }`}
+                              doc.status === 'Rechazado' ? 'bg-rose-50/10 border-rose-200' : 'bg-white border-slate-200 hover:border-slate-300'
+                            }`}
                         >
                           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                             <div className="flex items-start gap-2.5">
-                              <div className={`p-2 rounded mt-0.5 ${
-                                doc.status === 'Validado' ? 'bg-emerald-50 text-emerald-600' :
+                              <div className={`p-2 rounded mt-0.5 ${doc.status === 'Validado' ? 'bg-emerald-50 text-emerald-600' :
                                 doc.status === 'En revisión' ? 'bg-indigo-50 text-indigo-600' :
-                                doc.status === 'Rechazado' ? 'bg-rose-50 text-rose-600' : 'bg-slate-50 text-slate-500'
-                              }`}>
+                                  doc.status === 'Rechazado' ? 'bg-rose-50 text-rose-600' : 'bg-slate-50 text-slate-500'
+                                }`}>
                                 <FileCheck className="h-4.5 w-4.5" />
                               </div>
                               <div>
                                 <h4 className="text-xs font-bold text-slate-800">{doc.name}</h4>
                                 <div className="flex flex-wrap items-center gap-1.5 mt-1 text-[10px] text-slate-400 font-semibold">
-                                  <span>Estatus: 
-                                    <strong className={`ml-1 ${
-                                      doc.status === 'Validado' ? 'text-emerald-600' :
+                                  <span>Estatus:
+                                    <strong className={`ml-1 ${doc.status === 'Validado' ? 'text-emerald-600' :
                                       doc.status === 'En revisión' ? 'text-indigo-600' :
-                                      doc.status === 'Rechazado' ? 'text-rose-600' : 'text-slate-500'
-                                    }`}>{doc.status}</strong>
+                                        doc.status === 'Rechazado' ? 'text-rose-600' : 'text-slate-500'
+                                      }`}>{doc.status}</strong>
                                   </span>
                                   {doc.uploadDate && (
                                     <>
@@ -591,13 +633,13 @@ export default function CrmFiles({
                               {/* Drag/Drop and Manual trigger for upload */}
                               {doc.status !== 'Validado' && (
                                 <div className="relative">
-                                  <input 
-                                    type="file" 
+                                  <input
+                                    type="file"
                                     id={`file-input-${doc.id}`}
                                     onChange={(e) => handleFileInputChange(e, doc.id)}
-                                    className="hidden" 
+                                    className="hidden"
                                   />
-                                  <label 
+                                  <label
                                     htmlFor={`file-input-${doc.id}`}
                                     className="px-2.5 py-1.5 bg-white border border-slate-200 hover:border-slate-350 text-slate-600 hover:text-slate-800 rounded-lg text-[11px] font-semibold flex items-center gap-1.5 cursor-pointer transition-colors"
                                   >
@@ -609,13 +651,13 @@ export default function CrmFiles({
                               {/* Mesa de control validation actions (visible to admins) */}
                               {['Superadministrador', 'Administrador de Centro'].includes(currentUser.role) && doc.status === 'En revisión' && (
                                 <>
-                                  <button 
+                                  <button
                                     onClick={() => updateDocStatus(doc.id, 'Validado', 'Aprobado y validado en Mesa de Control.')}
                                     className="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-[11px] font-bold shadow-sm cursor-pointer"
                                   >
                                     Aprobar
                                   </button>
-                                  <button 
+                                  <button
                                     onClick={() => {
                                       const cause = prompt('Indica el motivo del rechazo del documento:', 'Firma ilegible o formato cortado.');
                                       if (cause) {
@@ -654,19 +696,19 @@ export default function CrmFiles({
                       </div>
 
                       <div className="flex flex-wrap gap-2 pt-2 border-t border-amber-150">
-                        <button 
+                        <button
                           onClick={() => handleBuroAction('firma_remota')}
                           className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg shadow-sm cursor-pointer"
                         >
                           Enviar Firma Remota
                         </button>
-                        <button 
+                        <button
                           onClick={() => handleBuroAction('firma_presencial')}
                           className="px-3.5 py-1.5 bg-white border border-slate-200 hover:border-slate-350 text-slate-700 text-xs font-semibold rounded-lg transition-colors"
                         >
                           Registrar Firma Presencial
                         </button>
-                        <button 
+                        <button
                           onClick={() => handleBuroAction('cargar')}
                           className="px-3.5 py-1.5 bg-slate-100 border border-slate-200 hover:border-slate-300 text-slate-600 text-xs font-semibold rounded-lg"
                         >
@@ -767,7 +809,7 @@ export default function CrmFiles({
                           <span className="font-bold text-slate-700 select-all">{activeFile.phone}</span>
                         </div>
                       </div>
-                      <button 
+                      <button
                         onClick={() => copyToClipboard(`${activeFile.name}\n${activeFile.email}\n${activeFile.phone}`, 'Datos generales')}
                         className="mt-4 w-full py-1.5 bg-slate-50 hover:bg-slate-100 text-[10px] font-bold text-slate-600 rounded border border-slate-200 transition-colors"
                       >
@@ -789,7 +831,7 @@ export default function CrmFiles({
                         </div>
                         <span className="text-[10px] block text-slate-400 mt-2">Actividad Económica: {activeFile.economicActivity}</span>
                       </div>
-                      <button 
+                      <button
                         onClick={() => copyToClipboard(`Ingreso: ${activeFile.monthlyIncome}\nGastos: ${activeFile.monthlyExpenses}\nActividad: ${activeFile.economicActivity}`, 'Ingresos y finanzas')}
                         className="mt-4 w-full py-1.5 bg-slate-50 hover:bg-slate-100 text-[10px] font-bold text-slate-600 rounded border border-slate-200 transition-colors"
                       >
@@ -817,16 +859,14 @@ export default function CrmFiles({
                       { step: '4. Generación de Comparativas Bancarias', desc: 'Se ha realizado y analizado la simulación de propuestas con SoFIA.', done: true },
                       { step: '5. Solicitud Prellenada y Enviada', desc: 'Se cargó formalmente la solicitud en el portal del banco asignado y se espera dictamen.', done: activeFile.stage === 'Enviado a banco' || activeFile.stage === 'Aprobado' }
                     ].map((st, idx) => (
-                      <div 
-                        key={idx} 
+                      <div
+                        key={idx}
                         onClick={() => toggleSubmissionStep(idx)}
-                        className={`border rounded-lg p-3.5 flex items-start gap-3 cursor-pointer transition-all ${
-                          st.done ? 'bg-emerald-50/10 border-emerald-250' : 'bg-white border-slate-200 hover:border-slate-350'
-                        }`}
+                        className={`border rounded-lg p-3.5 flex items-start gap-3 cursor-pointer transition-all ${st.done ? 'bg-emerald-50/10 border-emerald-250' : 'bg-white border-slate-200 hover:border-slate-350'
+                          }`}
                       >
-                        <div className={`w-5 h-5 rounded-full flex items-center justify-center border text-[10px] font-bold ${
-                          st.done ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-slate-50 text-slate-400 border-slate-300'
-                        }`}>
+                        <div className={`w-5 h-5 rounded-full flex items-center justify-center border text-[10px] font-bold ${st.done ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-slate-50 text-slate-400 border-slate-300'
+                          }`}>
                           {st.done ? '✓' : idx + 1}
                         </div>
                         <div>
@@ -868,7 +908,7 @@ export default function CrmFiles({
 
             {/* Footer del Drawer */}
             <div className="px-6 py-4 border-t border-slate-100 bg-slate-50/50 flex justify-end">
-              <button 
+              <button
                 onClick={() => setSelectedFileId(null)}
                 className="px-4 py-2 bg-slate-800 hover:bg-slate-750 text-white rounded-lg text-xs font-bold shadow-sm cursor-pointer"
               >
@@ -889,12 +929,12 @@ export default function CrmFiles({
                 <X className="h-4.5 w-4.5" />
               </button>
             </div>
-            
+
             <div className="p-6 space-y-4">
               <div className="space-y-1">
                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Nombre del Cliente</label>
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   value={newName}
                   onChange={(e) => setNewName(e.target.value)}
                   placeholder="Ej. Sofía Ramos Elizondo"
@@ -904,8 +944,8 @@ export default function CrmFiles({
 
               <div className="space-y-1">
                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Correo Institucional / Personal</label>
-                <input 
-                  type="email" 
+                <input
+                  type="email"
                   value={newEmail}
                   onChange={(e) => setNewEmail(e.target.value)}
                   placeholder="Ej. sofia.ramos@gmail.com"
@@ -915,8 +955,8 @@ export default function CrmFiles({
 
               <div className="space-y-1">
                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Teléfono de Contacto</label>
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   value={newPhone}
                   onChange={(e) => setNewPhone(e.target.value)}
                   placeholder="Ej. 811-234-5678"
@@ -927,8 +967,8 @@ export default function CrmFiles({
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
                   <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Monto Solicitado</label>
-                  <input 
-                    type="number" 
+                  <input
+                    type="number"
                     value={newRequestedAmount}
                     onChange={(e) => setNewRequestedAmount(parseInt(e.target.value) || 0)}
                     className="w-full text-xs font-semibold bg-slate-50 border border-slate-200 rounded px-3.5 py-2 outline-none focus:bg-white focus:border-emerald-500"
@@ -936,7 +976,7 @@ export default function CrmFiles({
                 </div>
                 <div className="space-y-1">
                   <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Tipo Crédito</label>
-                  <select 
+                  <select
                     value={newCreditType}
                     onChange={(e) => setNewCreditType(e.target.value)}
                     className="w-full text-xs font-semibold bg-slate-50 border border-slate-200 rounded px-3.5 py-2 outline-none focus:bg-white focus:border-emerald-500 cursor-pointer"
@@ -950,17 +990,19 @@ export default function CrmFiles({
             </div>
 
             <div className="px-6 py-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-2.5">
-              <button 
+              <button
                 onClick={() => setShowAddModal(false)}
-                className="px-4 py-2 border border-slate-200 hover:bg-slate-100 rounded-lg text-xs font-semibold text-slate-500 transition-colors"
+                disabled={creatingClient}
+                className="px-4 py-2 border border-slate-200 hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg text-xs font-semibold text-slate-500 transition-colors"
               >
                 Cancelar
               </button>
-              <button 
+              <button
                 onClick={createNewClient}
-                className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold shadow-sm transition-colors cursor-pointer"
+                disabled={creatingClient}
+                className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-300 disabled:cursor-not-allowed text-white rounded-lg text-xs font-bold shadow-sm transition-colors cursor-pointer"
               >
-                Crear Cliente
+                {creatingClient ? 'Registrando...' : 'Registrar cliente'}
               </button>
             </div>
           </div>

@@ -1,4 +1,5 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import ws from 'ws';
 
 export function createRequestSupabaseClient(
   accessToken: string,
@@ -22,6 +23,9 @@ export function createRequestSupabaseClient(
       autoRefreshToken: false,
       detectSessionInUrl: false,
       persistSession: false,
+    },
+    realtime: {
+      transport: ws,
     },
   });
 }

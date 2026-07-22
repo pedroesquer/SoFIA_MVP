@@ -18,6 +18,7 @@
     "dotenv": "^17.2.3",
     "express": "^4.21.2",
     "langchain": "^1.5.3",
+    "ws": "^8.13.0",
     "zod": "^4.4.3"
   },
   "devDependencies": {

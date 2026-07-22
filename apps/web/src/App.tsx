@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { User, MortgageFile, BankRate, SimulatedOffer } from './types';
-import { INITIAL_BANK_RATES, INITIAL_MORTGAGE_FILES } from './mockData';
+import { INITIAL_BANK_RATES } from './mockData';
 import { supabase } from './lib/supabase';
 
 // Modular Components
@@ -14,6 +14,7 @@ import KanbanBoard from './components/KanbanBoard';
 import RateAdmin from './components/RateAdmin';
 import CenterAdmin from './components/CenterAdmin';
 import GuidedFlow from './components/GuidedFlow';
+import { listarExpedientes, crearExpediente } from './lib/expedientes';
 
 // Icons
 import {
@@ -43,10 +44,10 @@ export default function App() {
   const [loginLoading, setLoginLoading] = useState(false);
 
   // Core App State
-  const [files, setFiles] = useState<MortgageFile[]>(INITIAL_MORTGAGE_FILES);
+  const [files, setFiles] = useState<MortgageFile[]>([]);
   const [rates, setRates] = useState<BankRate[]>(INITIAL_BANK_RATES);
   const [activeTab, setActiveTab] = useState<'dashboard' | 'crm' | 'kanban' | 'guided' | 'chat' | 'library' | 'rates' | 'center'>('dashboard');
-  const [activeFileId, setActiveFileId] = useState<string | null>('file-1'); // Default to Sofia Ramos
+  const [activeFileId, setActiveFileId] = useState<string | null>(null);
   const [guidedFlowFileId, setGuidedFlowFileId] = useState<string | null>(null);
 
   const activeFile = files.find(f => f.id === activeFileId);
@@ -70,12 +71,36 @@ export default function App() {
       );
     }
 
-    setCurrentUser({
+    const loadedUser: User = {
+      id: userId,
       email: profile.email,
       name: profile.name,
       role: profile.role as User['role'],
       sede: profile.sede,
-    });
+    };
+
+
+
+    try {
+      const expedientes = await listarExpedientes(
+        loadedUser.email,
+        loadedUser.sede,
+      );
+
+      setCurrentUser(loadedUser);
+      setFiles(expedientes);
+      setActiveFileId(expedientes[0]?.id ?? null);
+    } catch (error) {
+      console.error('Error cargando expedientes:', error);
+
+      setCurrentUser(null);
+      setFiles([]);
+      setActiveFileId(null);
+
+      throw new Error(
+        'Tu sesión inició correctamente, pero no fue posible cargar los expedientes.',
+      );
+    }
   };
   useEffect(() => {
     let mounted = true;
@@ -114,6 +139,8 @@ export default function App() {
     } = supabase.auth.onAuthStateChange((event) => {
       if (event === 'SIGNED_OUT' && mounted) {
         setCurrentUser(null);
+        setFiles([]);
+        setActiveFileId(null);
       }
     });
 
@@ -179,12 +206,33 @@ export default function App() {
     }
 
     setCurrentUser(null);
+    setFiles([]);
+    setActiveFileId(null);
     setEmail('');
     setPassword('');
     setLoginError('');
   };
 
   // State modification handlers
+  const handleAddFile = async (
+    newFile: Omit<MortgageFile, 'id'>,
+  ): Promise<MortgageFile> => {
+    try {
+      const createdFile = await crearExpediente(newFile);
+
+      setFiles((prev) => [createdFile, ...prev]);
+      setActiveFileId(createdFile.id);
+
+      return createdFile;
+    } catch (error) {
+      console.error('Error creando expediente:', error);
+
+      throw new Error(
+        'No fue posible registrar el expediente.',
+      );
+    }
+  };
+
   const handleUpdateFile = (fileId: string, updatedFields: Partial<MortgageFile>) => {
     setFiles(prev => prev.map(f => f.id === fileId ? { ...f, ...updatedFields } as MortgageFile : f));
   };
@@ -278,7 +326,7 @@ export default function App() {
               </button>
             </form>
 
-            
+
           </div>
         </div>
       </div>
@@ -463,6 +511,7 @@ export default function App() {
               files={files}
               onSelectFile={setActiveFileId}
               onUpdateFile={handleUpdateFile}
+              onAddFile={handleAddFile}
               onStartGuidedFlow={handleStartGuidedFlow}
             />
           )}
