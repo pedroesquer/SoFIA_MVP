@@ -349,6 +349,13 @@ Usa un tono sumamente sofisticado y experto en corretaje hipotecario.`;
     return res.json({ text: replyText, isSimulated: true });
   }
 });
+const webDistPath = path.resolve(process.cwd(), 'apps/web/dist');
+
+app.use(express.static(webDistPath));
+
+app.get('*', (_req, res) => {
+  res.sendFile(path.join(webDistPath, 'index.html'));
+});
 
 function startServer() {
   app.listen(PORT, '0.0.0.0', () => {
