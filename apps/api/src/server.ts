@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { getSofiaAgent } from './agent/sofiaAgent';
 import express from 'express';
 import path from 'path';
+import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 import { GoogleGenAI } from '@google/genai';
 import { authenticateRequest } from './auth/authMiddleware';
@@ -349,7 +350,8 @@ Usa un tono sumamente sofisticado y experto en corretaje hipotecario.`;
     return res.json({ text: replyText, isSimulated: true });
   }
 });
-const webDistPath = path.resolve(process.cwd(), 'apps/web/dist');
+const moduleDir = path.dirname(fileURLToPath(import.meta.url));
+const webDistPath = path.resolve(moduleDir, '../../web/dist');
 
 app.use(express.static(webDistPath));
 
