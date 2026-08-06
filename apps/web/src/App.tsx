@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { User, MortgageFile, BankRate, SimulatedOffer } from './types';
 import { INITIAL_BANK_RATES } from './mockData';
 import { supabase } from './lib/supabase';
+import sofiaMark from './assets/brand/sofia-mark-transparent.png';
+import sofiaHorizontalLogo from './assets/brand/sofia-horizontal-transparent.png';
 
 // Modular Components
 import Dashboard from './components/Dashboard';
@@ -18,7 +20,6 @@ import { listarExpedientes, crearExpediente } from './lib/expedientes';
 
 // Icons
 import {
-  Building,
   Sparkles,
   BookOpen,
   LayoutDashboard,
@@ -259,7 +260,10 @@ export default function App() {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
         <div className="text-center space-y-3">
-          <div className="w-10 h-10 mx-auto border-4 border-emerald-100 border-t-emerald-600 rounded-full animate-spin" />
+          <div className="relative mx-auto h-14 w-14 overflow-hidden rounded-2xl border border-emerald-200 bg-emerald-50 p-1.5 shadow-lg shadow-emerald-500/20">
+            <img src={sofiaMark} alt="" className="h-full w-full object-contain" />
+            <span className="absolute inset-0 rounded-2xl border-2 border-transparent border-t-emerald-400 animate-spin" />
+          </div>
 
           <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">
             Verificando sesión
@@ -270,10 +274,18 @@ export default function App() {
   }
   if (!currentUser) {
     return (
-      <div className="min-h-screen bg-slate-50 flex flex-col justify-center px-4 py-8 sm:px-6 sm:py-12 lg:px-8 font-sans" id="login-layout">
-        <div className="sm:mx-auto sm:w-full sm:max-w-md text-center space-y-4">
-          <div className="inline-flex p-3 bg-emerald-50 border border-emerald-150 rounded-xl text-emerald-600 shadow-sm animate-pulse">
-            <Building className="h-8 w-8" />
+      <div className="relative min-h-screen overflow-hidden bg-slate-50 flex flex-col justify-center px-4 py-8 sm:px-6 sm:py-12 lg:px-8 font-sans" id="login-layout">
+        <div className="pointer-events-none absolute inset-y-0 right-0 hidden w-[48%] overflow-hidden bg-gradient-to-br from-emerald-50 via-white to-slate-100 lg:block">
+          <img src={sofiaMark} alt="" className="h-full w-full object-contain p-20 xl:p-28" />
+          <div className="absolute inset-x-10 bottom-10 rounded-xl border border-emerald-100 bg-white/80 p-5 text-slate-800 shadow-sm backdrop-blur-sm">
+            <p className="text-xs font-black uppercase tracking-[0.22em] text-emerald-700">Inteligencia hipotecaria</p>
+            <p className="mt-2 max-w-sm text-sm leading-relaxed text-slate-600">Análisis, estructuración y seguimiento comercial desde una sola mesa operativa.</p>
+          </div>
+        </div>
+
+        <div className="relative z-10 sm:mx-auto sm:w-full sm:max-w-md lg:mx-0 lg:ml-[7vw] text-center space-y-4">
+          <div className="mx-auto h-24 w-full max-w-xs overflow-hidden rounded-xl border border-slate-200 bg-white p-4 shadow-lg shadow-emerald-900/10">
+            <img src={sofiaHorizontalLogo} alt="SoFIA" className="h-full w-full object-contain" />
           </div>
           <div>
             <h1 className="text-2xl font-black text-slate-900 tracking-tight">SoFIA Operativa</h1>
@@ -282,7 +294,7 @@ export default function App() {
           </div>
         </div>
 
-        <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+        <div className="relative z-10 mt-8 sm:mx-auto sm:w-full sm:max-w-md lg:mx-0 lg:ml-[7vw]">
           <div className="bg-white py-8 px-6 shadow-sm border border-slate-150 rounded-xl sm:px-10 space-y-6">
             <h3 className="text-sm font-extrabold text-slate-800 uppercase tracking-wider border-b border-slate-100 pb-2 text-center flex items-center justify-center gap-1.5">
               <Lock className="h-4 w-4 text-slate-400" />
@@ -352,11 +364,9 @@ export default function App() {
       <aside className={`fixed inset-y-0 left-0 z-50 flex w-72 max-w-[86vw] flex-col justify-between overflow-y-auto border-r border-slate-200 bg-white shadow-2xl transition-transform duration-200 lg:static lg:z-auto lg:w-60 lg:max-w-none lg:translate-x-0 lg:shadow-none ${isMobileNavOpen ? 'translate-x-0' : '-translate-x-full'}`} id="sidebar">
         <div>
           {/* Logo Brand */}
-          <div className="p-5 lg:p-6 border-b border-slate-100 flex items-center gap-2.5 mb-2">
-            <div className="w-8 h-8 bg-emerald-600 rounded flex items-center justify-center text-white font-bold text-lg">S</div>
-            <div className="min-w-0 flex-1">
-              <h2 className="font-semibold text-base text-slate-800 tracking-tight leading-tight">SoFIA <span className="text-emerald-600">Operativa</span></h2>
-              <span className="text-[9px] font-bold text-slate-400 tracking-wider uppercase block">CREDIDIEZ CRM</span>
+          <div className="p-4 lg:p-5 border-b border-slate-100 flex items-center gap-2.5 mb-2">
+            <div className="h-16 min-w-0 flex-1 overflow-hidden rounded-lg border border-slate-200 bg-white p-2 shadow-sm">
+              <img src={sofiaHorizontalLogo} alt="SoFIA Operativa" className="h-full w-full object-contain" />
             </div>
             <button
               type="button"

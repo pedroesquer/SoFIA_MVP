@@ -3,9 +3,9 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { ChatMessage, User, MortgageFile, BankRate } from '../types';
 import { authenticatedFetch } from '../lib/api';
+import sofiaMark from '../assets/brand/sofia-mark-transparent.png';
 import {
   Send,
-  Sparkles,
   Clock,
   HelpCircle,
   Trash2,
@@ -149,8 +149,8 @@ Pregúntame sobre tasas hipotecarias, viabilidad de prospectos o estrategias com
       {/* Header del Chat */}
       <div className="flex items-start justify-between gap-3 px-4 py-3 sm:items-center sm:px-6 sm:py-4 border-b border-slate-100 bg-slate-50/50">
         <div className="flex min-w-0 items-center gap-3">
-          <div className="p-2.5 bg-emerald-50 text-emerald-600 rounded-lg border border-emerald-100/50 animate-pulse">
-            <Sparkles className="h-5 w-5" />
+          <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg border border-emerald-200 bg-emerald-50 p-1 shadow-sm">
+            <img src={sofiaMark} alt="" className="h-full w-full object-contain" />
           </div>
           <div className="min-w-0">
             <h2 className="text-sm font-semibold text-slate-800 flex flex-wrap items-center gap-2">
@@ -179,8 +179,8 @@ Pregúntame sobre tasas hipotecarias, viabilidad de prospectos o estrategias com
             className={`flex gap-2 sm:gap-4 ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
           >
             {message.sender === 'sofia' && (
-              <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 border border-emerald-100 flex items-center justify-center font-bold text-xs flex-shrink-0 mt-1">
-                SF
+              <div className="w-8 h-8 overflow-hidden rounded-lg bg-emerald-50 border border-emerald-200 p-1 flex items-center justify-center flex-shrink-0 mt-1">
+                <img src={sofiaMark} alt="SoFIA" className="h-full w-full object-contain" />
               </div>
             )}
             <div className={`min-w-0 max-w-[88%] rounded-xl p-3 sm:max-w-[85%] sm:p-4 shadow-sm leading-relaxed text-sm ${message.sender === 'user'
@@ -207,8 +207,8 @@ Pregúntame sobre tasas hipotecarias, viabilidad de prospectos o estrategias com
 
         {isLoading && (
           <div className="flex gap-4 justify-start">
-            <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 border border-emerald-100 flex items-center justify-center font-bold text-xs flex-shrink-0 animate-pulse">
-              SF
+            <div className="w-8 h-8 overflow-hidden rounded-lg bg-emerald-50 border border-emerald-200 p-1 flex items-center justify-center flex-shrink-0 animate-pulse">
+              <img src={sofiaMark} alt="SoFIA" className="h-full w-full object-contain" />
             </div>
             <div className="bg-slate-50 border border-slate-150 rounded-xl p-4 shadow-sm rounded-bl-none max-w-[85%] flex items-center gap-2">
               <span className="w-2 h-2 bg-emerald-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
