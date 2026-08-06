@@ -120,7 +120,7 @@ export default function GuidedFlow({
             ].map(step => (
               <React.Fragment key={step.num}>
                 {step.num > 1 && <span className="text-slate-350">/</span>}
-                <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border ${
+                <div className={`flex shrink-0 items-center gap-1.5 px-3 py-1.5 rounded-lg border ${
                   currentStep === step.num 
                     ? 'bg-emerald-50 text-emerald-800 border-emerald-200' 
                     : currentStep > step.num ? 'bg-slate-50 text-slate-500 border-slate-200' : 'bg-white text-slate-400 border-slate-150'
@@ -139,7 +139,7 @@ export default function GuidedFlow({
       </div>
 
       {/* Flujo Principal */}
-      <div className="bg-white border border-slate-150 rounded-xl p-6 shadow-sm min-h-[450px]">
+      <div className="bg-white border border-slate-150 rounded-xl p-4 sm:p-6 shadow-sm min-h-[380px] sm:min-h-[450px]">
         
         {/* PASO 1: SELECCIÓN DE EXPEDIENTE */}
         {currentStep === 1 && (
@@ -191,17 +191,17 @@ export default function GuidedFlow({
               onProceedToSimulation={() => setCurrentStep(3)} // advance on confirm
             />
             
-            <div className="flex justify-between pt-4 border-t border-slate-100">
+            <div className="flex flex-col gap-2 pt-4 border-t border-slate-100 sm:flex-row sm:justify-between">
               <button 
                 onClick={() => setCurrentStep(1)}
-                className="flex items-center gap-1.5 px-4 py-2 border border-slate-250 text-slate-600 rounded-lg text-xs font-semibold"
+                className="flex w-full items-center justify-center gap-1.5 px-4 py-2 border border-slate-250 text-slate-600 rounded-lg text-xs font-semibold sm:w-auto"
               >
                 <ChevronLeft className="h-4.5 w-4.5" /> Cambiar Cliente
               </button>
               
               <button 
                 onClick={() => setCurrentStep(3)}
-                className="flex items-center gap-1.5 px-4 py-2 bg-slate-850 hover:bg-slate-850/90 text-white rounded-lg text-xs font-bold shadow-sm"
+                className="flex w-full items-center justify-center gap-1.5 px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-bold shadow-sm sm:w-auto"
               >
                 Simular y Comparar Bancos <ChevronRight className="h-4.5 w-4.5" />
               </button>
@@ -219,17 +219,17 @@ export default function GuidedFlow({
               onUpdateSimulations={handleSimulationsUpdate}
             />
 
-            <div className="flex justify-between pt-4 border-t border-slate-100">
+            <div className="flex flex-col gap-2 pt-4 border-t border-slate-100 sm:flex-row sm:justify-between">
               <button 
                 onClick={() => setCurrentStep(2)}
-                className="flex items-center gap-1.5 px-4 py-2 border border-slate-250 text-slate-600 rounded-lg text-xs font-semibold"
+                className="flex w-full items-center justify-center gap-1.5 px-4 py-2 border border-slate-250 text-slate-600 rounded-lg text-xs font-semibold sm:w-auto"
               >
                 <ChevronLeft className="h-4.5 w-4.5" /> Regresar al Perfil
               </button>
               
               <button 
                 onClick={() => setCurrentStep(4)}
-                className="flex items-center gap-1.5 px-5 py-2 bg-slate-850 hover:bg-slate-850/90 text-white rounded-lg text-xs font-bold shadow-sm"
+                className="flex w-full items-center justify-center gap-1.5 px-5 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-bold shadow-sm sm:w-auto"
               >
                 Generar Propuesta Hipotecaria <ChevronRight className="h-4.5 w-4.5" />
               </button>
@@ -242,16 +242,16 @@ export default function GuidedFlow({
           <div className="space-y-6">
             
             {/* Reporte imprimible / Propuesta formal */}
-            <div className="border border-slate-250 rounded-xl p-8 bg-white shadow-sm space-y-6 max-w-3xl mx-auto" id="printable-proposal">
+            <div className="border border-slate-250 rounded-xl p-4 sm:p-8 bg-white shadow-sm space-y-6 max-w-3xl mx-auto" id="printable-proposal">
               
               {/* Encabezado Corporativo */}
-              <div className="flex justify-between items-start border-b border-slate-200 pb-5">
+              <div className="flex flex-col gap-3 border-b border-slate-200 pb-5 sm:flex-row sm:items-start sm:justify-between">
                 <div>
                   <h1 className="text-lg font-black text-slate-900 tracking-tight">CREDIDIEZ ASESORES</h1>
                   <p className="text-[10px] font-bold text-emerald-700 tracking-widest uppercase mt-0.5">Propuesta de Financiamiento Hipotecario</p>
                   <p className="text-[9px] text-slate-400 mt-1">Generado el: {new Date().toLocaleDateString('es-MX')} por {currentUser.name}</p>
                 </div>
-                <div className="text-right">
+                <div className="text-left sm:text-right">
                   <span className="text-[11px] font-extrabold text-slate-800">Folio Propuesta</span>
                   <p className="text-xs font-bold text-emerald-600">PROP-{selectedFile.id.split('-')[1]?.toUpperCase() || 'M710'}</p>
                 </div>
@@ -260,7 +260,7 @@ export default function GuidedFlow({
               {/* Ficha del Cliente */}
               <div className="space-y-3">
                 <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider border-b border-slate-100 pb-1">1. Ficha Técnica del Prospecto</h3>
-                <div className="grid grid-cols-2 gap-4 text-xs">
+                <div className="grid grid-cols-1 gap-4 text-xs sm:grid-cols-2">
                   <div className="space-y-1.5">
                     <p className="text-slate-400 font-medium">Nombre Completo: <strong className="text-slate-700 font-bold">{selectedFile.name}</strong></p>
                     <p className="text-slate-400 font-medium">Ingreso Comprobable: <strong className="text-slate-700 font-bold">${selectedFile.monthlyIncome.toLocaleString('es-MX')} MXN</strong></p>
@@ -279,7 +279,7 @@ export default function GuidedFlow({
                 <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider border-b border-slate-100 pb-1">2. Opciones de Crédito Seleccionadas</h3>
                 {stepSimulations.length > 0 ? (
                   <div className="overflow-x-auto border border-slate-200 rounded-lg">
-                    <table className="w-full text-[11px] text-left text-slate-600">
+                    <table className="min-w-[560px] w-full text-[11px] text-left text-slate-600">
                       <thead className="bg-slate-50 border-b border-slate-200 text-slate-700 uppercase tracking-wider font-bold">
                         <tr>
                           <th className="px-3.5 py-2.5">Banco / Producto</th>
@@ -318,7 +318,7 @@ export default function GuidedFlow({
               </div>
 
               {/* Firmas de conformidad */}
-              <div className="grid grid-cols-2 gap-8 pt-8 mt-8 border-t border-slate-200 text-center text-[10px] text-slate-400">
+              <div className="grid grid-cols-1 gap-8 pt-8 mt-8 border-t border-slate-200 text-center text-[10px] text-slate-400 sm:grid-cols-2">
                 <div className="space-y-6">
                   <div className="h-10 border-b border-dashed border-slate-300" />
                   <p className="font-bold text-slate-600">{currentUser.name}</p>
@@ -336,22 +336,22 @@ export default function GuidedFlow({
             <div className="flex flex-col sm:flex-row justify-between items-center gap-3 pt-6 border-t border-slate-150 max-w-3xl mx-auto">
               <button 
                 onClick={() => setCurrentStep(3)}
-                className="flex items-center gap-1.5 px-4 py-2 border border-slate-250 text-slate-600 rounded-lg text-xs font-semibold"
+                className="flex w-full items-center justify-center gap-1.5 px-4 py-2 border border-slate-250 text-slate-600 rounded-lg text-xs font-semibold sm:w-auto"
               >
                 <ChevronLeft className="h-4.5 w-4.5" /> Modificar Opciones
               </button>
 
-              <div className="flex gap-2">
+              <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
                 <button 
                   onClick={() => window.print()}
-                  className="px-3.5 py-2 border border-slate-200 hover:border-slate-300 text-slate-600 rounded-lg text-xs font-semibold flex items-center gap-1"
+                  className="flex w-full items-center justify-center gap-1 px-3.5 py-2 border border-slate-200 hover:border-slate-300 text-slate-600 rounded-lg text-xs font-semibold sm:w-auto"
                 >
                   <Printer className="h-4 w-4" /> Imprimir Propuesta
                 </button>
 
                 <button 
                   onClick={handleFinishProposal}
-                  className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg text-xs shadow-sm cursor-pointer"
+                  className="w-full px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg text-xs shadow-sm cursor-pointer sm:w-auto"
                 >
                   Guardar Propuesta y Avanzar en Pipeline
                 </button>

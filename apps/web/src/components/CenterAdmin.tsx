@@ -97,7 +97,7 @@ export default function CenterAdmin({ currentUser }: CenterAdminProps) {
 
   if (currentUser.role !== 'Superadministrador') {
     return (
-      <div className="bg-rose-50 border border-rose-200 rounded-xl p-8 text-center max-w-md mx-auto space-y-4">
+      <div className="bg-rose-50 border border-rose-200 rounded-xl p-5 sm:p-8 text-center max-w-md mx-auto space-y-4">
         <ShieldAlert className="h-10 w-10 text-rose-500 mx-auto" />
         <h3 className="text-sm font-bold text-rose-900">Privilegios Insuficientes</h3>
         <p className="text-xs text-rose-700 leading-relaxed">
@@ -145,7 +145,7 @@ export default function CenterAdmin({ currentUser }: CenterAdminProps) {
           <div className="bg-white border border-slate-150 rounded-xl p-5 shadow-sm">
             <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider mb-4">Plantilla de Asesores y Asignación de Roles</h4>
             <div className="overflow-x-auto border border-slate-150 rounded-lg">
-              <table className="w-full text-xs text-left text-slate-600 font-medium">
+              <table className="min-w-[760px] w-full text-xs text-left text-slate-600 font-medium">
                 <thead className="bg-slate-50 border-b border-slate-150 text-[10px] font-bold uppercase tracking-wider text-slate-700">
                   <tr>
                     <th className="px-4 py-3">Asesor / Correo</th>

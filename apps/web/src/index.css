@@ -4,11 +4,42 @@
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+  --color-slate-150: #e9eef5;
+  --color-slate-250: #d6dee9;
+  --color-slate-350: #afbac9;
+  --color-slate-750: #28364a;
+  --color-slate-850: #172033;
+  --color-emerald-150: #bcf6db;
+  --color-emerald-250: #8becc4;
+  --color-rose-150: #fed9dd;
+  --color-amber-150: #fdeca9;
+  --color-amber-250: #fddc6c;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  min-width: 320px;
+  margin: 0;
+  overflow-x: hidden;
+}
+
+button,
+input,
+select,
+textarea {
+  min-width: 0;
 }
 
 /* Custom premium styling for SoFIA Markdown chat answers */
 .markdown-body {
   font-family: var(--font-sans);
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .markdown-body h1, 
@@ -50,6 +81,7 @@
 
 /* Beautiful custom tables for comparison results */
 .markdown-body table {
+  min-width: 36rem;
   width: 100%;
   margin-top: 1rem;
   margin-bottom: 1rem;
@@ -61,6 +93,16 @@
   border-radius: 0.375rem;
   overflow: hidden;
   box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.markdown-body:has(table) {
+  overflow-x: auto;
+}
+
+@media (max-width: 639px) {
+  .markdown-body h1 { font-size: 1.1rem; }
+  .markdown-body h2 { font-size: 1rem; }
+  .markdown-body h3 { font-size: 0.925rem; }
 }
 
 .markdown-body table th {

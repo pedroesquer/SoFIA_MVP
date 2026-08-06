@@ -200,7 +200,7 @@ No pudimos procesar la auditoría con inteligencia artificial en tiempo real. Aq
   return (
     <div className="space-y-6" id="mortgage-simulator-view">
       {/* Title */}
-      <div className="bg-white border border-slate-150 rounded-xl p-6 shadow-sm flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div className="bg-white border border-slate-150 rounded-xl p-4 sm:p-6 shadow-sm flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <h1 className="text-xl font-semibold text-slate-800 flex items-center gap-2">
             <Award className="h-5 w-5 text-emerald-600" />
@@ -263,7 +263,7 @@ No pudimos procesar la auditoría con inteligencia artificial en tiempo real. Aq
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Gráfico Comparativo Rápido (Custom SVG) */}
         <div className="lg:col-span-2 bg-white border border-slate-150 rounded-xl p-5 shadow-sm">
-          <div className="flex justify-between items-center mb-4">
+          <div className="flex flex-col gap-1 mb-4 sm:flex-row sm:items-center sm:justify-between">
             <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider">Comparativa de Mensualidades por Institución</h4>
             <span className="text-[10px] text-slate-400 font-medium">Monto: ${clientData.requestedAmount.toLocaleString('es-MX')} MXN · {clientData.termYears} años</span>
           </div>
@@ -275,7 +275,7 @@ No pudimos procesar la auditoría con inteligencia artificial en tiempo real. Aq
 
               return (
                 <div key={idx} className="flex items-center gap-3">
-                  <div className="w-20 text-xs font-bold text-slate-700 truncate">{sim.bankName}</div>
+                  <div className="w-16 shrink-0 text-xs font-bold text-slate-700 truncate sm:w-20">{sim.bankName}</div>
                   <div className="flex-1 bg-slate-50 border border-slate-100 rounded-full h-6 overflow-hidden relative">
                     <div 
                       className={`h-full rounded-full transition-all duration-700 ${
@@ -287,7 +287,7 @@ No pudimos procesar la auditoría con inteligencia artificial en tiempo real. Aq
                       ${sim.monthlyPayment.toLocaleString('es-MX')} / mes
                     </span>
                   </div>
-                  <span className="text-[10px] font-bold text-slate-400 w-12 text-right">
+                  <span className="hidden text-[10px] font-bold text-slate-400 w-12 text-right sm:block">
                     Tasa: {sim.interestRate.toFixed(2)}%
                   </span>
                 </div>
@@ -340,10 +340,10 @@ No pudimos procesar la auditoría con inteligencia artificial en tiempo real. Aq
             </div>
           </div>
 
-          <div className="pt-4 border-t border-slate-100 flex justify-between items-center gap-2">
+          <div className="pt-4 border-t border-slate-100 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <button 
               onClick={() => setViewMode(viewMode === 'grid' ? 'table' : 'grid')}
-              className="flex items-center gap-1.5 px-3 py-2 border border-slate-200 hover:border-slate-300 text-xs font-semibold text-slate-600 bg-white rounded-lg transition-all"
+              className="flex w-full items-center justify-center gap-1.5 px-3 py-2 border border-slate-200 hover:border-slate-300 text-xs font-semibold text-slate-600 bg-white rounded-lg transition-all sm:w-auto"
             >
               {viewMode === 'grid' ? <List className="h-3.5 w-3.5" /> : <Grid className="h-3.5 w-3.5" />}
               {viewMode === 'grid' ? 'Vista de Tabla' : 'Vista de Tarjetas'}
@@ -493,7 +493,7 @@ No pudimos procesar la auditoría con inteligencia artificial en tiempo real. Aq
         /* Vista de Tabla Premium */
         <div className="bg-white border border-slate-150 rounded-xl overflow-hidden shadow-sm">
           <div className="overflow-x-auto">
-            <table className="w-full text-xs text-left text-slate-600">
+            <table className="min-w-[900px] w-full text-xs text-left text-slate-600">
               <thead className="bg-slate-50 border-b border-slate-150 text-[10px] font-bold uppercase tracking-wider text-slate-700">
                 <tr>
                   <th className="px-5 py-4">Banco</th>

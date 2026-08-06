@@ -69,7 +69,7 @@ export default function FinancialLibrary({ currentUser, rates, onNavigateToAdmin
   return (
     <div className="space-y-6" id="library-container">
       {/* Top Banner */}
-      <div className="bg-white border border-slate-150 rounded-xl p-6 shadow-sm flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div className="bg-white border border-slate-150 rounded-xl p-4 sm:p-6 shadow-sm flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <h1 className="text-xl font-semibold text-slate-800 tracking-tight flex items-center gap-2">
             <BookOpen className="h-5 w-5 text-emerald-600" />
@@ -161,7 +161,7 @@ export default function FinancialLibrary({ currentUser, rates, onNavigateToAdmin
                 </div>
 
                 {/* Métricas Principales de Tasa */}
-                <div className="grid grid-cols-3 gap-4 bg-slate-50 border border-slate-100 rounded-lg p-3.5 my-4">
+                <div className="grid grid-cols-1 gap-3 min-[420px]:grid-cols-3 sm:gap-4 bg-slate-50 border border-slate-100 rounded-lg p-3.5 my-4">
                   <div>
                     <p className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">Tasa Ordinaria</p>
                     <p className="text-base font-bold text-slate-800 mt-0.5">{rate.interestRate.toFixed(2)}%</p>

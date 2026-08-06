@@ -347,14 +347,14 @@ export default function CrmFiles({
           />
         </div>
 
-        <div className="flex gap-2">
-          <div className="flex items-center gap-1.5 text-xs text-slate-500 bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5">
+        <div className="flex flex-col gap-2 sm:flex-row">
+          <div className="flex w-full items-center gap-1.5 text-xs text-slate-500 bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 sm:w-auto">
             <Filter className="h-3.5 w-3.5" />
             <span>Etapa:</span>
             <select
               value={selectedStage}
               onChange={(e) => setSelectedStage(e.target.value)}
-              className="bg-transparent border-none font-semibold text-slate-700 outline-none cursor-pointer"
+              className="min-w-0 flex-1 bg-transparent border-none font-semibold text-slate-700 outline-none cursor-pointer"
             >
               <option value="Todos">Todos</option>
               <option value="Prospecto">Prospecto</option>
@@ -368,17 +368,87 @@ export default function CrmFiles({
 
           <button
             onClick={() => setShowAddModal(true)}
-            className="flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-emerald-600 rounded-lg hover:bg-emerald-700 transition-all shadow-sm cursor-pointer"
+            className="flex w-full items-center justify-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-emerald-600 rounded-lg hover:bg-emerald-700 transition-all shadow-sm cursor-pointer sm:w-auto"
           >
             <Plus className="h-4 w-4" /> Registrar Cliente
           </button>
         </div>
       </div>
 
+      {/* Mobile card roster: keeps every important field visible without horizontal scrolling. */}
+      <div className="grid gap-3 md:hidden">
+        {visibleFiles.map((file) => (
+          <article key={file.id} className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+            <div className="flex items-start justify-between gap-3 border-b border-slate-100 p-4">
+              <div className="min-w-0">
+                <p className="truncate text-sm font-bold text-slate-900">{file.name}</p>
+                <p className="mt-0.5 truncate text-[10px] font-semibold text-slate-400">Folio: {file.id}</p>
+              </div>
+              <div className="flex shrink-0 flex-col items-end gap-1">
+                <span className={`whitespace-nowrap rounded-full border px-2 py-0.5 text-[9px] font-bold ${file.stage === 'Aprobado' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
+                  file.stage === 'Rechazado' ? 'bg-rose-50 text-rose-700 border-rose-200' :
+                    file.stage === 'Enviado a banco' ? 'bg-blue-50 text-blue-700 border-blue-200' :
+                      file.stage === 'Docs integrados' ? 'bg-indigo-50 text-indigo-700 border-indigo-200' :
+                        file.stage === 'En análisis' ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-slate-100 text-slate-600 border-slate-200'
+                  }`}>
+                  {file.stage}
+                </span>
+                <span className={`text-[9px] font-semibold ${file.priority === 'Alta' ? 'text-rose-500' : 'text-slate-400'}`}>
+                  Prioridad {file.priority}
+                </span>
+              </div>
+            </div>
+
+            <div className="space-y-3 p-4">
+              <div className="grid grid-cols-2 gap-3 text-[11px]">
+                <div>
+                  <p className="text-[9px] font-bold uppercase tracking-wider text-slate-400">Monto solicitado</p>
+                  <p className="mt-0.5 font-bold text-slate-800">${file.requestedAmount.toLocaleString('es-MX')} MXN</p>
+                  <p className="text-[10px] text-slate-400">{file.creditType}</p>
+                </div>
+                <div>
+                  <p className="text-[9px] font-bold uppercase tracking-wider text-slate-400">Asesor / sede</p>
+                  <p className="mt-0.5 truncate font-semibold capitalize text-slate-700">{file.broker.split('@')[0].replace('.', ' ')}</p>
+                  <p className="text-[10px] text-slate-400">{file.sede}</p>
+                </div>
+              </div>
+
+              <div className="space-y-1 border-t border-slate-100 pt-3 text-[11px] text-slate-500">
+                <p className="flex min-w-0 items-center gap-1.5"><Mail className="h-3 w-3 shrink-0" /><span className="truncate">{file.email}</span></p>
+                <p className="flex items-center gap-1.5"><Phone className="h-3 w-3 shrink-0" />{file.phone}</p>
+              </div>
+
+              <div className="rounded-lg bg-slate-50 p-3">
+                <p className="text-[9px] font-bold uppercase tracking-wider text-slate-400">Siguiente acción</p>
+                <p className="mt-1 text-xs font-semibold leading-relaxed text-slate-700">{file.nextAction}</p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedFileId(file.id);
+                  onSelectFile(file.id);
+                  setActiveTab('resumen');
+                }}
+                className="w-full rounded-lg bg-slate-900 px-4 py-2.5 text-xs font-bold text-white shadow-sm transition-colors hover:bg-slate-800"
+              >
+                Abrir expediente
+              </button>
+            </div>
+          </article>
+        ))}
+
+        {visibleFiles.length === 0 && (
+          <div className="rounded-xl border border-dashed border-slate-200 bg-white px-4 py-10 text-center text-xs font-semibold text-slate-400">
+            No se encontraron expedientes con los criterios establecidos.
+          </div>
+        )}
+      </div>
+
       {/* Roster Table of Files */}
-      <div className="bg-white border border-slate-150 rounded-xl shadow-sm overflow-hidden">
+      <div className="hidden bg-white border border-slate-150 rounded-xl shadow-sm overflow-hidden md:block">
         <div className="overflow-x-auto">
-          <table className="w-full text-xs text-left text-slate-600 font-medium">
+          <table className="min-w-[900px] w-full text-xs text-left text-slate-600 font-medium">
             <thead className="bg-slate-50 border-b border-slate-150 uppercase tracking-wider text-[10px] text-slate-700 font-bold">
               <tr>
                 <th className="px-5 py-4">Cliente / Contacto</th>
@@ -459,16 +529,16 @@ export default function CrmFiles({
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex justify-end">
           <div className="w-full max-w-4xl bg-white h-full flex flex-col justify-between shadow-2xl relative animate-in slide-in-from-right duration-300">
             {/* Header del Drawer */}
-            <div className="px-6 py-4 border-b border-slate-100 bg-slate-50/50 flex justify-between items-start">
-              <div>
-                <div className="flex items-center gap-2">
+            <div className="px-4 py-4 sm:px-6 border-b border-slate-100 bg-slate-50/50 flex justify-between items-start gap-3">
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-2">
                   <Folder className="h-5 w-5 text-emerald-600" />
-                  <h2 className="text-base font-bold text-slate-800">Expediente Hipotecario: {activeFile.name}</h2>
+                  <h2 className="text-sm font-bold text-slate-800 sm:text-base">Expediente Hipotecario: {activeFile.name}</h2>
                   <span className="text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-150 px-2 py-0.5 rounded-full">
                     {activeFile.stage}
                   </span>
                 </div>
-                <p className="text-[11px] text-slate-500 mt-1">Folio: CRED-{activeFile.id.split('-')[1] || activeFile.id.substr(5, 5).toUpperCase()} · Broker Responsable: {activeFile.broker}</p>
+                <p className="break-words text-[11px] text-slate-500 mt-1">Folio: CRED-{activeFile.id.split('-')[1] || activeFile.id.substr(5, 5).toUpperCase()} · Broker Responsable: {activeFile.broker}</p>
               </div>
               <button
                 onClick={() => setSelectedFileId(null)}
@@ -479,7 +549,7 @@ export default function CrmFiles({
             </div>
 
             {/* Tabs del Drawer */}
-            <div className="px-6 bg-slate-50 border-b border-slate-150 flex gap-1.5 overflow-x-auto">
+            <div className="px-4 sm:px-6 bg-slate-50 border-b border-slate-150 flex gap-1.5 overflow-x-auto">
               {[
                 { id: 'resumen', label: 'Resumen del Perfil' },
                 { id: 'docs', label: 'Documentos' },
@@ -491,7 +561,7 @@ export default function CrmFiles({
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id as any)}
-                  className={`px-3.5 py-3 text-xs font-bold tracking-tight outline-none border-b-2 transition-all cursor-pointer ${activeTab === tab.id
+                  className={`shrink-0 whitespace-nowrap px-3.5 py-3 text-xs font-bold tracking-tight outline-none border-b-2 transition-all cursor-pointer ${activeTab === tab.id
                     ? 'border-emerald-600 text-emerald-700 font-extrabold'
                     : 'border-transparent text-slate-500 hover:text-slate-800'
                     }`}
@@ -502,7 +572,7 @@ export default function CrmFiles({
             </div>
 
             {/* Contenido del Drawer */}
-            <div className="flex-1 overflow-y-auto p-6 space-y-6">
+            <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6">
 
               {/* TAB 1: RESUMEN PERFIL */}
               {activeTab === 'resumen' && (
@@ -513,7 +583,7 @@ export default function CrmFiles({
                       <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider border-b border-slate-200 pb-1 flex items-center gap-1">
                         <UserIcon className="h-4 w-4" /> Datos de Identificación
                       </h4>
-                      <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div className="grid grid-cols-1 gap-2 text-xs sm:grid-cols-2">
                         <span className="text-slate-400">Edad:</span>
                         <span className="font-bold text-slate-800">{activeFile.age} años</span>
                         <span className="text-slate-400">Actividad:</span>
@@ -529,7 +599,7 @@ export default function CrmFiles({
                       <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider border-b border-slate-200 pb-1 flex items-center gap-1">
                         <Briefcase className="h-4 w-4" /> Criterios del Financiamiento
                       </h4>
-                      <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div className="grid grid-cols-1 gap-2 text-xs sm:grid-cols-2">
                         <span className="text-slate-400">Monto Solicitado:</span>
                         <span className="font-bold text-slate-800">${activeFile.requestedAmount.toLocaleString('es-MX')}</span>
                         <span className="text-slate-400">Valor Propiedad:</span>
@@ -570,7 +640,7 @@ export default function CrmFiles({
               {/* TAB 2: DOCUMENTACIÓN */}
               {activeTab === 'docs' && (
                 <div className="space-y-5">
-                  <div className="bg-slate-50 border border-slate-200 p-4 rounded-lg flex items-center justify-between">
+                  <div className="bg-slate-50 border border-slate-200 p-4 rounded-lg flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
                     <div>
                       <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider">Cumplimiento del Expediente</h4>
                       <p className="text-[11px] text-slate-500 mt-0.5">La mesa de control requiere validación total de los 7 documentos obligatorios.</p>
@@ -684,7 +754,7 @@ export default function CrmFiles({
                 <div className="space-y-6">
                   {/* Warning when authorization is pending */}
                   {activeFile.buro.authStatus !== 'Autorización firmada' ? (
-                    <div className="bg-amber-50/50 border border-amber-250 p-6 rounded-xl space-y-4">
+                    <div className="bg-amber-50/50 border border-amber-250 p-4 sm:p-6 rounded-xl space-y-4">
                       <div className="flex gap-3">
                         <AlertTriangle className="h-6 w-6 text-amber-600 flex-shrink-0" />
                         <div>
@@ -907,7 +977,7 @@ export default function CrmFiles({
             </div>
 
             {/* Footer del Drawer */}
-            <div className="px-6 py-4 border-t border-slate-100 bg-slate-50/50 flex justify-end">
+            <div className="px-4 py-4 sm:px-6 border-t border-slate-100 bg-slate-50/50 flex justify-end">
               <button
                 onClick={() => setSelectedFileId(null)}
                 className="px-4 py-2 bg-slate-800 hover:bg-slate-750 text-white rounded-lg text-xs font-bold shadow-sm cursor-pointer"
@@ -923,14 +993,14 @@ export default function CrmFiles({
       {showAddModal && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white border border-slate-150 rounded-xl max-w-md w-full shadow-2xl overflow-hidden animate-in zoom-in-95 duration-150">
-            <div className="px-6 py-4 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
+            <div className="px-4 py-4 sm:px-6 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center gap-3">
               <h3 className="text-sm font-bold text-slate-800">Registrar Nuevo Prospecto</h3>
               <button onClick={() => setShowAddModal(false)} className="p-1 text-slate-400 hover:text-slate-600 rounded">
                 <X className="h-4.5 w-4.5" />
               </button>
             </div>
 
-            <div className="p-6 space-y-4">
+            <div className="p-4 sm:p-6 space-y-4">
               <div className="space-y-1">
                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Nombre del Cliente</label>
                 <input
@@ -964,7 +1034,7 @@ export default function CrmFiles({
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div className="space-y-1">
                   <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Monto Solicitado</label>
                   <input
@@ -989,7 +1059,7 @@ export default function CrmFiles({
               </div>
             </div>
 
-            <div className="px-6 py-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-2.5">
+            <div className="px-4 py-4 sm:px-6 bg-slate-50 border-t border-slate-100 flex flex-col-reverse gap-2.5 sm:flex-row sm:justify-end">
               <button
                 onClick={() => setShowAddModal(false)}
                 disabled={creatingClient}

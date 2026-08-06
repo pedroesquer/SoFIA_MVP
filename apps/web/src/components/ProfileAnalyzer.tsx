@@ -256,7 +256,7 @@ export default function ProfileAnalyzer({
 
   return (
     <div className="space-y-6" id="risk-analyzer-view">
-      <div className="bg-white border border-slate-150 rounded-xl p-6 shadow-sm">
+      <div className="bg-white border border-slate-150 rounded-xl p-4 sm:p-6 shadow-sm">
         <h1 className="text-xl font-semibold text-slate-800 flex items-center gap-2">
           <Zap className="h-5 w-5 text-emerald-600" />
           Analizador de Perfil y Diagnóstico de Riesgo
@@ -276,7 +276,7 @@ export default function ProfileAnalyzer({
             Parámetros del Cliente
           </h3>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div className="space-y-1">
               <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Edad del cliente</label>
               <input 
@@ -310,7 +310,7 @@ export default function ProfileAnalyzer({
             </select>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div className="space-y-1">
               <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Antigüedad (meses)</label>
               <input 
@@ -345,7 +345,7 @@ export default function ProfileAnalyzer({
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div className="space-y-1">
               <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Valor de Propiedad</label>
               <input 
@@ -380,7 +380,7 @@ export default function ProfileAnalyzer({
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div className="space-y-1">
               <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Gastos Estimados</label>
               <input 
@@ -545,7 +545,7 @@ export default function ProfileAnalyzer({
               <div className="bg-white border border-slate-150 rounded-xl p-5 shadow-sm">
                 <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider mb-3">Diagnóstico de Viabilidad por Banco</h4>
                 <div className="overflow-x-auto border border-slate-150 rounded-lg">
-                  <table className="w-full text-xs text-left text-slate-600">
+                  <table className="min-w-[720px] w-full text-xs text-left text-slate-600">
                     <thead className="bg-slate-50 border-b border-slate-150 text-slate-700 uppercase tracking-wider text-[10px] font-bold">
                       <tr>
                         <th className="px-4 py-3">Banco</th>
@@ -602,7 +602,7 @@ export default function ProfileAnalyzer({
               </div>
             </div>
           ) : (
-            <div className="bg-white border border-slate-150 border-dashed rounded-xl p-12 text-center text-slate-400 flex flex-col items-center justify-center space-y-3 h-[400px]">
+            <div className="bg-white border border-slate-150 border-dashed rounded-xl p-6 sm:p-12 text-center text-slate-400 flex flex-col items-center justify-center space-y-3 min-h-[280px] sm:min-h-[400px]">
               <HelpCircle className="h-10 w-10 text-slate-300" />
               <p className="text-sm font-semibold text-slate-500">Sin análisis activo</p>
               <p className="text-xs text-slate-400 max-w-sm leading-normal">

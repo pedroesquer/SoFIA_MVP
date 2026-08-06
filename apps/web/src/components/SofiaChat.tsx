@@ -145,19 +145,19 @@ Pregúntame sobre tasas hipotecarias, viabilidad de prospectos o estrategias com
   ];
 
   return (
-    <div className="flex flex-col h-[calc(100vh-140px)] bg-white border border-slate-150 rounded-xl shadow-sm overflow-hidden" id="sofia-chat-panel">
+    <div className="flex flex-col h-[calc(100dvh-178px)] min-h-[480px] lg:h-[calc(100vh-128px)] bg-white border border-slate-150 rounded-xl shadow-sm overflow-hidden" id="sofia-chat-panel">
       {/* Header del Chat */}
-      <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50/50">
-        <div className="flex items-center gap-3">
+      <div className="flex items-start justify-between gap-3 px-4 py-3 sm:items-center sm:px-6 sm:py-4 border-b border-slate-100 bg-slate-50/50">
+        <div className="flex min-w-0 items-center gap-3">
           <div className="p-2.5 bg-emerald-50 text-emerald-600 rounded-lg border border-emerald-100/50 animate-pulse">
             <Sparkles className="h-5 w-5" />
           </div>
-          <div>
-            <h2 className="text-sm font-semibold text-slate-800 flex items-center gap-2">
+          <div className="min-w-0">
+            <h2 className="text-sm font-semibold text-slate-800 flex flex-wrap items-center gap-2">
               SoFIA Copiloto Hipotecario
               <span className="text-[10px] bg-emerald-100 text-emerald-800 font-semibold px-2 py-0.2 rounded-full border border-emerald-200">AI Activa</span>
             </h2>
-            <p className="text-[11px] text-slate-500">
+            <p className="truncate text-[11px] text-slate-500">
               {activeFile ? `Contexto activo: ${activeFile.name}` : 'Especializada en tasas y políticas de crédito'}
             </p>
           </div>
@@ -172,18 +172,18 @@ Pregúntame sobre tasas hipotecarias, viabilidad de prospectos o estrategias com
       </div>
 
       {/* Historial de Mensajes */}
-      <div className="flex-1 overflow-y-auto p-6 space-y-6">
+      <div className="flex-1 overflow-y-auto p-3 sm:p-6 space-y-4 sm:space-y-6">
         {messages.map((message) => (
           <div
             key={message.id}
-            className={`flex gap-4 ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
+            className={`flex gap-2 sm:gap-4 ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
           >
             {message.sender === 'sofia' && (
               <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 border border-emerald-100 flex items-center justify-center font-bold text-xs flex-shrink-0 mt-1">
                 SF
               </div>
             )}
-            <div className={`max-w-[85%] rounded-xl p-4 shadow-sm leading-relaxed text-sm ${message.sender === 'user'
+            <div className={`min-w-0 max-w-[88%] rounded-xl p-3 sm:max-w-[85%] sm:p-4 shadow-sm leading-relaxed text-sm ${message.sender === 'user'
                 ? 'bg-slate-900 text-white rounded-br-none'
                 : 'bg-slate-50 border border-slate-150 text-slate-900 rounded-bl-none'
               }`}>
@@ -223,7 +223,7 @@ Pregúntame sobre tasas hipotecarias, viabilidad de prospectos o estrategias com
 
       {/* Sugerencias Rápidas */}
       {messages.length === 1 && (
-        <div className="px-6 py-2.5 border-t border-slate-100 bg-slate-50/50">
+        <div className="px-4 sm:px-6 py-2.5 border-t border-slate-100 bg-slate-50/50 max-h-36 overflow-y-auto sm:max-h-none">
           <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
             <Compass className="h-3.5 w-3.5" /> Atajos Rápidos de Consulta
           </p>
@@ -247,7 +247,7 @@ Pregúntame sobre tasas hipotecarias, viabilidad de prospectos o estrategias com
       )}
 
       {/* Input de Mensaje */}
-      <div className="p-4 border-t border-slate-100 bg-white">
+      <div className="p-3 sm:p-4 border-t border-slate-100 bg-white">
         <div className="flex gap-2.5 items-center relative">
           <input
             type="text"

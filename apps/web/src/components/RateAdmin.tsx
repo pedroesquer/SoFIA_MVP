@@ -159,7 +159,7 @@ export default function RateAdmin({ currentUser, rates, onAddRate, onUpdateRate 
   // Check role restrictions
   if (!['Superadministrador', 'Administrador de Centro'].includes(currentUser.role)) {
     return (
-      <div className="bg-rose-50 border border-rose-200 rounded-xl p-8 text-center max-w-md mx-auto space-y-4">
+      <div className="bg-rose-50 border border-rose-200 rounded-xl p-5 sm:p-8 text-center max-w-md mx-auto space-y-4">
         <Lock className="h-10 w-10 text-rose-500 mx-auto" />
         <h3 className="text-sm font-bold text-rose-900">Acceso Restringido</h3>
         <p className="text-xs text-rose-700 leading-relaxed">
@@ -179,7 +179,7 @@ export default function RateAdmin({ currentUser, rates, onAddRate, onUpdateRate 
           {isEditing ? 'Editar Producto Bancario' : 'Registrar Nuevo Producto'}
         </h3>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div className="space-y-1">
             <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Banco</label>
             <input 
@@ -202,7 +202,7 @@ export default function RateAdmin({ currentUser, rates, onAddRate, onUpdateRate 
           </div>
         </div>
 
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 gap-3 min-[420px]:grid-cols-3">
           <div className="space-y-1">
             <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Tasa (%)</label>
             <input 
@@ -235,7 +235,7 @@ export default function RateAdmin({ currentUser, rates, onAddRate, onUpdateRate 
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div className="space-y-1">
             <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Validación Estado</label>
             <select 
@@ -320,7 +320,7 @@ export default function RateAdmin({ currentUser, rates, onAddRate, onUpdateRate 
         <div className="bg-white border border-slate-150 rounded-xl p-5 shadow-sm">
           <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider mb-4">Tasas y Políticas de Crédito Disponibles</h4>
           <div className="overflow-x-auto border border-slate-150 rounded-lg">
-            <table className="w-full text-xs text-left text-slate-600 font-medium">
+            <table className="min-w-[720px] w-full text-xs text-left text-slate-600 font-medium">
               <thead className="bg-slate-50 border-b border-slate-150 text-[10px] font-bold uppercase tracking-wider text-slate-700">
                 <tr>
                   <th className="px-4 py-3">Banco / Producto</th>

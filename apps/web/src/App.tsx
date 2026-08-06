@@ -32,7 +32,9 @@ import {
   Sliders,
   Users,
   ShieldCheck,
-  MapPin
+  MapPin,
+  Menu,
+  X
 } from 'lucide-react';
 
 export default function App() {
@@ -49,6 +51,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<'dashboard' | 'crm' | 'kanban' | 'guided' | 'chat' | 'library' | 'rates' | 'center'>('dashboard');
   const [activeFileId, setActiveFileId] = useState<string | null>(null);
   const [guidedFlowFileId, setGuidedFlowFileId] = useState<string | null>(null);
+  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
 
   const activeFile = files.find(f => f.id === activeFileId);
 
@@ -267,7 +270,7 @@ export default function App() {
   }
   if (!currentUser) {
     return (
-      <div className="min-h-screen bg-slate-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8 font-sans" id="login-layout">
+      <div className="min-h-screen bg-slate-50 flex flex-col justify-center px-4 py-8 sm:px-6 sm:py-12 lg:px-8 font-sans" id="login-layout">
         <div className="sm:mx-auto sm:w-full sm:max-w-md text-center space-y-4">
           <div className="inline-flex p-3 bg-emerald-50 border border-emerald-150 rounded-xl text-emerald-600 shadow-sm animate-pulse">
             <Building className="h-8 w-8" />
@@ -334,18 +337,35 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50/60 flex text-slate-800 font-sans leading-relaxed text-sm antialiased" id="main-panel-layout">
+    <div className="min-h-screen lg:h-screen lg:overflow-hidden bg-slate-50/60 flex text-slate-800 font-sans leading-relaxed text-sm antialiased" id="main-panel-layout">
+
+      {isMobileNavOpen && (
+        <button
+          type="button"
+          aria-label="Cerrar menú de navegación"
+          onClick={() => setIsMobileNavOpen(false)}
+          className="fixed inset-0 z-40 bg-slate-950/45 backdrop-blur-[1px] lg:hidden"
+        />
+      )}
 
       {/* 1. SIDEBAR NAVIGATION */}
-      <aside className="w-60 bg-white border-r border-slate-200 flex flex-col justify-between" id="sidebar">
+      <aside className={`fixed inset-y-0 left-0 z-50 flex w-72 max-w-[86vw] flex-col justify-between overflow-y-auto border-r border-slate-200 bg-white shadow-2xl transition-transform duration-200 lg:static lg:z-auto lg:w-60 lg:max-w-none lg:translate-x-0 lg:shadow-none ${isMobileNavOpen ? 'translate-x-0' : '-translate-x-full'}`} id="sidebar">
         <div>
           {/* Logo Brand */}
-          <div className="p-6 border-b border-slate-100 flex items-center gap-2.5 mb-2">
+          <div className="p-5 lg:p-6 border-b border-slate-100 flex items-center gap-2.5 mb-2">
             <div className="w-8 h-8 bg-emerald-600 rounded flex items-center justify-center text-white font-bold text-lg">S</div>
-            <div>
+            <div className="min-w-0 flex-1">
               <h2 className="font-semibold text-base text-slate-800 tracking-tight leading-tight">SoFIA <span className="text-emerald-600">Operativa</span></h2>
               <span className="text-[9px] font-bold text-slate-400 tracking-wider uppercase block">CREDIDIEZ CRM</span>
             </div>
+            <button
+              type="button"
+              onClick={() => setIsMobileNavOpen(false)}
+              className="rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-700 lg:hidden"
+              aria-label="Cerrar menú"
+            >
+              <X className="h-5 w-5" />
+            </button>
           </div>
 
           {/* Menú Principal */}
@@ -368,6 +388,7 @@ export default function App() {
                   onClick={() => {
                     setActiveTab(item.id as any);
                     if (item.id !== 'guided') setGuidedFlowFileId(null);
+                    setIsMobileNavOpen(false);
                   }}
                   className={`w-full flex items-center gap-3 px-3 py-2 rounded-md text-xs font-semibold transition-colors cursor-pointer ${isActive
                     ? 'text-emerald-600 bg-emerald-50 font-semibold'
@@ -385,7 +406,10 @@ export default function App() {
               <div className="pt-4 mt-4 border-t border-slate-100 space-y-1">
                 <span className="block text-[9px] font-extrabold text-slate-400 uppercase tracking-widest px-3 mb-2">Administración</span>
                 <button
-                  onClick={() => setActiveTab('rates')}
+                  onClick={() => {
+                    setActiveTab('rates');
+                    setIsMobileNavOpen(false);
+                  }}
                   className={`w-full flex items-center gap-3 px-3 py-2 rounded-md text-xs font-semibold transition-colors cursor-pointer ${activeTab === 'rates'
                     ? 'text-emerald-600 bg-emerald-50 font-semibold'
                     : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800'
@@ -400,7 +424,10 @@ export default function App() {
             {/* Administrador de Centro (Superadmin only) */}
             {currentUser.role === 'Superadministrador' && (
               <button
-                onClick={() => setActiveTab('center')}
+                onClick={() => {
+                  setActiveTab('center');
+                  setIsMobileNavOpen(false);
+                }}
                 className={`w-full flex items-center gap-3 px-3 py-2 rounded-md text-xs font-semibold transition-colors cursor-pointer ${activeTab === 'center'
                   ? 'text-emerald-600 bg-emerald-50 font-semibold'
                   : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800'
@@ -442,12 +469,20 @@ export default function App() {
       </aside>
 
       {/* 2. MAIN CORE STAGE */}
-      <div className="flex-1 flex flex-col min-w-0 bg-slate-50" id="main-content-stage">
+      <div className="flex-1 flex flex-col min-w-0 bg-slate-50 lg:min-h-0" id="main-content-stage">
 
         {/* HEADER BAR */}
-        <header className="h-16 bg-white border-b border-slate-200 px-8 flex items-center justify-between shrink-0" id="header">
-          <div className="flex items-center gap-4">
-            <h1 className="text-lg font-semibold text-slate-800">
+        <header className="shrink-0 border-b border-slate-200 bg-white px-4 py-3 sm:px-6 lg:h-16 lg:px-8 lg:py-0 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between" id="header">
+          <div className="flex min-w-0 items-center gap-3 lg:gap-4">
+            <button
+              type="button"
+              onClick={() => setIsMobileNavOpen(true)}
+              className="shrink-0 rounded-lg border border-slate-200 bg-white p-2 text-slate-600 shadow-sm hover:bg-slate-50 lg:hidden"
+              aria-label="Abrir menú de navegación"
+            >
+              <Menu className="h-5 w-5" />
+            </button>
+            <h1 className="truncate text-base font-semibold text-slate-800 sm:text-lg">
               {activeTab === 'dashboard' ? 'Dashboard General' :
                 activeTab === 'crm' ? 'Expedientes CRM' :
                   activeTab === 'kanban' ? 'Tablero Kanban' :
@@ -456,20 +491,20 @@ export default function App() {
                         activeTab === 'library' ? 'Biblioteca Financiera' :
                           activeTab === 'rates' ? 'Administrador de Tasas' : 'Administración de Centro'}
             </h1>
-            <div className="h-4 w-px bg-slate-200"></div>
-            <span className="text-xs text-slate-400 font-medium px-2.5 py-0.5 bg-slate-50 border border-slate-200 rounded-full">
+            <div className="hidden h-4 w-px bg-slate-200 sm:block"></div>
+            <span className="hidden shrink-0 text-xs text-slate-400 font-medium px-2.5 py-0.5 bg-slate-50 border border-slate-200 rounded-full sm:inline-flex">
               {currentUser.sede}
             </span>
           </div>
 
           {/* Active Client Selector Dropdown status */}
-          <div className="flex items-center gap-4">
-            <div className="text-right">
+          <div className="flex min-w-0 items-center gap-2 sm:gap-4">
+            <div className="min-w-0 flex-1 text-left sm:text-right">
               <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest block">Expediente Contextual</span>
               <select
                 value={activeFileId || ''}
                 onChange={(e) => setActiveFileId(e.target.value || null)}
-                className="bg-transparent border-none font-bold text-xs text-slate-800 outline-none cursor-pointer pr-1 hover:text-emerald-700 transition-colors"
+                className="block w-full max-w-full truncate bg-transparent border-none font-bold text-xs text-slate-800 outline-none cursor-pointer pr-1 hover:text-emerald-700 transition-colors sm:max-w-xs"
               >
                 <option value="">-- Ninguno Seleccionado --</option>
                 {files.map(file => (
@@ -487,7 +522,7 @@ export default function App() {
         </header>
 
         {/* CORE VIEWS SHELL */}
-        <main className="flex-1 overflow-y-auto p-8 max-w-7xl w-full mx-auto" id="stage-viewport">
+        <main className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto" id="stage-viewport">
           {activeTab === 'dashboard' && (
             <Dashboard
               currentUser={currentUser}

@@ -112,14 +112,14 @@ export default function KanbanBoard({ currentUser, files, onUpdateFile, onSelect
       </div>
 
       {/* Kanban Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-6 gap-4 overflow-x-auto pb-4">
+      <div className="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-4 md:grid md:grid-cols-3 md:snap-none xl:grid-cols-6">
         {columns.map((column) => {
           const columnFiles = filteredFiles.filter(f => f.stage === column.stage);
 
           return (
             <div 
               key={column.stage} 
-              className={`border border-dashed rounded-xl p-3 min-h-[550px] flex flex-col ${column.color} ${column.border}`}
+              className={`w-[82vw] max-w-sm shrink-0 snap-start border border-dashed rounded-xl p-3 min-h-[420px] flex flex-col md:w-auto md:max-w-none md:min-h-[550px] ${column.color} ${column.border}`}
             >
               {/* Header Columna */}
               <div className="flex justify-between items-center mb-3 pb-2 border-b border-slate-200/60">

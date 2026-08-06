@@ -90,7 +90,7 @@ export default function Dashboard({
   return (
     <div className="space-y-6" id="dashboard-container">
       {/* Welcome Banner */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between bg-white border border-slate-100 rounded-xl p-6 shadow-sm">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between bg-white border border-slate-100 rounded-xl p-4 sm:p-6 shadow-sm">
         <div>
           <span className="text-xs font-semibold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full uppercase tracking-wider">
             {currentUser.role}
@@ -104,16 +104,16 @@ export default function Dashboard({
               : `Sede: ${currentUser.sede} · Supervisando ${visibleFiles.length} expedientes activos.`}
           </p>
         </div>
-        <div className="flex gap-3 mt-4 md:mt-0">
+        <div className="flex flex-col gap-3 mt-4 sm:flex-row md:mt-0">
           <button 
             onClick={() => onNavigate(6)} // CRM module
-            className="px-4 py-2 text-sm font-medium text-slate-600 bg-slate-50 border border-slate-200 rounded-lg hover:bg-slate-100 transition-colors"
+            className="w-full px-4 py-2 text-sm font-medium text-slate-600 bg-slate-50 border border-slate-200 rounded-lg hover:bg-slate-100 transition-colors sm:w-auto"
           >
             Ver CRM Completo
           </button>
           <button 
             onClick={() => onNavigate(3)} // Profile analyzer
-            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-emerald-600 rounded-lg hover:bg-emerald-700 shadow-sm transition-colors"
+            className="flex w-full items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-emerald-600 rounded-lg hover:bg-emerald-700 shadow-sm transition-colors sm:w-auto"
           >
             <Zap className="h-4 w-4" />
             Nuevo Diagnóstico
@@ -245,7 +245,7 @@ export default function Dashboard({
           {/* Bancos Más Utilizados (Simulado en Base a Expedientes) */}
           <div className="mt-6 pt-5 border-t border-slate-100">
             <h4 className="text-sm font-semibold text-slate-700 mb-3">Bancos Más Solicitados en Sede</h4>
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 gap-3 min-[420px]:grid-cols-3 sm:gap-4">
               <div className="p-3 bg-slate-50 rounded-lg text-center border border-slate-100">
                 <p className="text-xs font-medium text-slate-500">Banorte</p>
                 <p className="text-lg font-bold text-slate-800 mt-0.5">35%</p>
