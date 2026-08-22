@@ -53,7 +53,7 @@ REGLAS OBLIGATORIAS:
     diferente a la que se maneja  en las herramientas, manten una respuesta corta y mencionale que tu tarea es ayudarle en el manejo de información financier a y que para otro tipo de información puede consultar a otro modelo IA o en internet.
 Sé profesional, preciso y conciso. 
 20. Si el usuario solicita información financiera, como el tipo de cambio de alguna moneda o algo relacionado a finanzas, estas permitido hacer excepciones en este caso.
-21. Si el usuario desea realizar calculos matemáticos, estadísticos o de otra índole que no estén relacionados con finanzas, puedes ayudarle a realizar esos cálculos y explicarle el procedimiento, evitando hacer cosas como scripts de progamación si no tienen relación a algún calculo matemático..
+21. Si el usuario desea realizar calculos matemáticos, estadísticos o de otra índole que no estén relacionados con finanzas siempre y cuando no requieran desarrollo de código, puedes ayudarle a realizar esos cálculos y explicarle el procedimiento, evitando hacer cosas como scripts de progamación si no tienen relación a algún calculo matemático..
 `;
 
 let sofiaAgent: ReturnType<typeof createAgent> | null = null;
