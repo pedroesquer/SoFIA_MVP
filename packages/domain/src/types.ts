@@ -116,6 +116,7 @@ export interface ChatMessage {
   text: string;
   timestamp: string;
   sources?: string[];
+  isVoiceNote?: boolean;
 }
 
 export interface GuidedFlowState {

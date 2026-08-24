@@ -12,13 +12,25 @@ import {
   FileText,
   Compass,
   ArrowRight,
-  ShieldCheck
+  ShieldCheck,
+  Mic,
+  MicOff,
+  Square,
+  AlertCircle
 } from 'lucide-react';
 
 interface SofiaChatProps {
   currentUser: User;
   activeFile?: MortgageFile;
   rates: BankRate[];
+}
+
+// Global declaration for SpeechRecognition window extension
+declare global {
+  interface Window {
+    SpeechRecognition: any;
+    webkitSpeechRecognition: any;
+  }
 }
 
 export default function SofiaChat({ currentUser, activeFile, rates }: SofiaChatProps) {
@@ -39,7 +51,16 @@ Aquí tienes algunas consultas frecuentes que puedo resolver en segundos:`,
 
   const [inputText, setInputText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  
+  // Voice Recording / Dictation State
+  const [isListening, setIsListening] = useState(false);
+  const [recordingSeconds, setRecordingSeconds] = useState(0);
+  const [speechError, setSpeechError] = useState<string | null>(null);
+  const [wasVoiceNote, setWasVoiceNote] = useState(false);
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const recognitionRef = useRef<any>(null);
+  const timerRef = useRef<any>(null);
 
   // Auto-scroll to bottom on new messages
   const scrollToBottom = () => {
@@ -50,19 +71,119 @@ Aquí tienes algunas consultas frecuentes que puedo resolver en segundos:`,
     scrollToBottom();
   }, [messages, isLoading]);
 
+  // Clean up recognition and timer on unmount
+  useEffect(() => {
+    return () => {
+      if (recognitionRef.current) {
+        recognitionRef.current.stop();
+      }
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+    };
+  }, []);
+
+  const startVoiceDictation = () => {
+    setSpeechError(null);
+    const SpeechRecognitionClass = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    if (!SpeechRecognitionClass) {
+      setSpeechError('Tu navegador no soporta el reconocimiento de voz. Te recomendamos usar Google Chrome o Microsoft Edge.');
+      return;
+    }
+
+    try {
+      const recognition = new SpeechRecognitionClass();
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      recognition.lang = 'es-MX';
+
+      let initialText = inputText ? `${inputText.trim()} ` : '';
+
+      recognition.onresult = (event: any) => {
+        let transcript = '';
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          transcript += event.results[i][0].transcript;
+        }
+        setInputText(initialText + transcript);
+        setWasVoiceNote(true);
+      };
+
+      recognition.onerror = (event: any) => {
+        console.error('Speech recognition error:', event.error);
+        if (event.error === 'not-allowed') {
+          setSpeechError('Permiso de micrófono denegado. Por favor, habilita el micrófono en tu navegador.');
+        } else if (event.error !== 'no-speech') {
+          setSpeechError('No se pudo procesar la voz. Inténtalo de nuevo.');
+        }
+        stopVoiceDictation();
+      };
+
+      recognition.onend = () => {
+        setIsListening(false);
+        if (timerRef.current) {
+          clearInterval(timerRef.current);
+          timerRef.current = null;
+        }
+      };
+
+      recognition.start();
+      recognitionRef.current = recognition;
+      setIsListening(true);
+      setRecordingSeconds(0);
+
+      timerRef.current = setInterval(() => {
+        setRecordingSeconds((prev) => prev + 1);
+      }, 1000);
+
+    } catch (err) {
+      console.error('Error starting speech recognition:', err);
+      setSpeechError('No fue posible iniciar el dictado por voz.');
+      setIsListening(false);
+    }
+  };
+
+  const stopVoiceDictation = () => {
+    if (recognitionRef.current) {
+      recognitionRef.current.stop();
+      recognitionRef.current = null;
+    }
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+    setIsListening(false);
+  };
+
+  const toggleVoiceDictation = () => {
+    if (isListening) {
+      stopVoiceDictation();
+    } else {
+      startVoiceDictation();
+    }
+  };
+
   const handleSendMessage = async (textToSend?: string) => {
     const text = (textToSend || inputText).trim();
     if (!text) return;
 
+    if (isListening) {
+      stopVoiceDictation();
+    }
+
+    const isVoice = !textToSend && wasVoiceNote;
+
     if (!textToSend) {
       setInputText('');
     }
+    setWasVoiceNote(false);
 
     const userMsg: ChatMessage = {
       id: `msg-${Date.now()}-user`,
       sender: 'user',
       text,
-      timestamp: new Date().toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })
+      timestamp: new Date().toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' }),
+      isVoiceNote: isVoice
     };
 
     setMessages(prev => [...prev, userMsg]);
@@ -144,6 +265,12 @@ Pregúntame sobre tasas hipotecarias, viabilidad de prospectos o estrategias com
     { label: '💵 Analiza el expediente activo', query: `Analiza la viabilidad del cliente actual ${activeFile ? activeFile.name : ''} basándote en sus ingresos y deudas.` }
   ];
 
+  const formatSeconds = (sec: number) => {
+    const mins = Math.floor(sec / 60);
+    const remainderSecs = sec % 60;
+    return `${mins.toString().padStart(2, '0')}:${remainderSecs.toString().padStart(2, '0')}`;
+  };
+
   return (
     <div className="flex flex-col h-[calc(100dvh-178px)] min-h-[480px] lg:h-[calc(100vh-128px)] bg-white border border-slate-150 rounded-xl shadow-sm overflow-hidden" id="sofia-chat-panel">
       {/* Header del Chat */}
@@ -164,12 +291,28 @@ Pregúntame sobre tasas hipotecarias, viabilidad de prospectos o estrategias com
         </div>
         <button
           onClick={clearChat}
-          className="p-2 text-slate-400 hover:text-rose-600 hover:bg-slate-100 rounded-lg transition-all"
+          className="p-2 text-slate-400 hover:text-rose-600 hover:bg-slate-100 rounded-lg transition-all cursor-pointer"
           title="Limpiar Conversación"
         >
           <Trash2 className="h-4 w-4" />
         </button>
       </div>
+
+      {/* Banner de error de micrófono o voz */}
+      {speechError && (
+        <div className="px-4 py-2 bg-rose-50 border-b border-rose-150 text-rose-700 text-xs font-semibold flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <AlertCircle className="h-4 w-4 text-rose-500 shrink-0" />
+            <span>{speechError}</span>
+          </div>
+          <button
+            onClick={() => setSpeechError(null)}
+            className="text-rose-500 hover:text-rose-800 text-xs font-bold underline cursor-pointer"
+          >
+            Entendido
+          </button>
+        </div>
+      )}
 
       {/* Historial de Mensajes */}
       <div className="flex-1 overflow-y-auto p-3 sm:p-6 space-y-4 sm:space-y-6">
@@ -187,6 +330,12 @@ Pregúntame sobre tasas hipotecarias, viabilidad de prospectos o estrategias com
                 ? 'bg-slate-900 text-white rounded-br-none'
                 : 'bg-slate-50 border border-slate-150 text-slate-900 rounded-bl-none'
               }`}>
+              {message.sender === 'user' && message.isVoiceNote && (
+                <div className="flex items-center gap-1.5 mb-2 pb-1.5 border-b border-slate-800 text-[10px] text-emerald-400 font-semibold tracking-wide">
+                  <Mic className="h-3 w-3" />
+                  <span>Nota de voz transcrita</span>
+                </div>
+              )}
               <div className={`markdown-body ${message.sender === 'user' ? 'user-message-markdown' : ''}`}>
                 <ReactMarkdown remarkPlugins={[remarkGfm]}>
                   {message.text}
@@ -222,7 +371,7 @@ Pregúntame sobre tasas hipotecarias, viabilidad de prospectos o estrategias com
       </div>
 
       {/* Sugerencias Rápidas */}
-      {messages.length === 1 && (
+      {messages.length === 1 && !isListening && (
         <div className="px-4 sm:px-6 py-2.5 border-t border-slate-100 bg-slate-50/50 max-h-36 overflow-y-auto sm:max-h-none">
           <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
             <Compass className="h-3.5 w-3.5" /> Atajos Rápidos de Consulta
@@ -235,7 +384,7 @@ Pregúntame sobre tasas hipotecarias, viabilidad de prospectos o estrategias com
                 <button
                   key={idx}
                   onClick={() => handleSendMessage(q.query)}
-                  className="text-xs font-medium text-slate-600 bg-white hover:text-emerald-700 hover:bg-emerald-50 border border-slate-200 hover:border-emerald-200 px-3 py-1.5 rounded-lg text-left transition-all flex items-center gap-1"
+                  className="text-xs font-medium text-slate-600 bg-white hover:text-emerald-700 hover:bg-emerald-50 border border-slate-200 hover:border-emerald-200 px-3 py-1.5 rounded-lg text-left transition-all flex items-center gap-1 cursor-pointer"
                 >
                   {q.label}
                   <ArrowRight className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -243,6 +392,19 @@ Pregúntame sobre tasas hipotecarias, viabilidad de prospectos o estrategias com
               );
             })}
           </div>
+        </div>
+      )}
+
+      {/* Banner de Grabación Activa */}
+      {isListening && (
+        <div className="px-4 py-2 bg-rose-500 text-white text-xs font-bold flex items-center justify-between animate-pulse">
+          <div className="flex items-center gap-2">
+            <Mic className="h-4 w-4 animate-spin" />
+            <span>Escuchando tu nota de voz... Dicta tu consulta a SoFIA</span>
+          </div>
+          <span className="font-mono bg-rose-700 px-2 py-0.5 rounded text-[11px]">
+            {formatSeconds(recordingSeconds)}
+          </span>
         </div>
       )}
 
@@ -255,9 +417,43 @@ Pregúntame sobre tasas hipotecarias, viabilidad de prospectos o estrategias com
             onChange={(e) => setInputText(e.target.value)}
             onKeyDown={handleKeyPress}
             disabled={isLoading}
-            placeholder={activeFile ? `Pregunta a SoFIA sobre el caso de ${activeFile.name}...` : "Escribe una pregunta sobre políticas, tasas o expedientes..."}
-            className="flex-1 text-sm bg-slate-50 hover:bg-slate-50/80 focus:bg-white border border-slate-200 focus:border-emerald-500 rounded-lg px-4 py-3 pr-12 outline-none transition-all placeholder:text-slate-400 text-slate-800 font-medium"
+            placeholder={
+              isListening
+                ? "Dictando nota de voz..."
+                : activeFile
+                ? `Pregunta a SoFIA sobre el caso de ${activeFile.name}...`
+                : "Escribe una pregunta sobre políticas, tasas o dicta con el micrófono..."
+            }
+            className={`flex-1 text-sm bg-slate-50 hover:bg-slate-50/80 focus:bg-white border rounded-lg px-4 py-3 pr-24 outline-none transition-all placeholder:text-slate-400 text-slate-800 font-medium ${
+              isListening ? 'border-rose-400 ring-2 ring-rose-200 bg-rose-50/30' : 'border-slate-200 focus:border-emerald-500'
+            }`}
           />
+
+          {/* Botón de Dictado por Voz (Micrófono) */}
+          <button
+            type="button"
+            onClick={toggleVoiceDictation}
+            disabled={isLoading}
+            title={isListening ? "Detener dictado de voz" : "Dictar nota de voz"}
+            className={`absolute right-12 p-2 rounded-md transition-all flex items-center gap-1.5 cursor-pointer ${
+              isListening
+                ? 'bg-rose-600 hover:bg-rose-700 text-white shadow-sm'
+                : 'text-slate-400 hover:text-emerald-600 hover:bg-slate-100'
+            }`}
+          >
+            {isListening ? (
+              <>
+                <Square className="h-4 w-4 fill-white" />
+                <span className="text-[10px] font-mono font-bold hidden sm:inline">
+                  {formatSeconds(recordingSeconds)}
+                </span>
+              </>
+            ) : (
+              <Mic className="h-4 w-4" />
+            )}
+          </button>
+
+          {/* Botón de Enviar */}
           <button
             onClick={() => handleSendMessage()}
             disabled={isLoading || !inputText.trim()}
