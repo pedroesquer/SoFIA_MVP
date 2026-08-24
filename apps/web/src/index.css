@@ -39,7 +39,9 @@ textarea {
 .markdown-body {
   font-family: var(--font-sans);
   min-width: 0;
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
+  word-break: normal;
+  hyphens: manual;
 }
 
 .markdown-body h1, 
@@ -114,12 +116,16 @@ textarea {
   text-transform: uppercase;
   font-size: 0.7rem;
   letter-spacing: 0.05em;
+  word-break: normal;
+  overflow-wrap: break-word;
 }
 
 .markdown-body table td {
   padding: 0.625rem 0.75rem;
   border-bottom: 1px solid #f1f5f9;
   color: #334155; /* slate 700 */
+  word-break: normal;
+  overflow-wrap: break-word;
 }
 
 .markdown-body table tr:hover {
