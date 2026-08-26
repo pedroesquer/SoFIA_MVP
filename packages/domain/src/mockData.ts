@@ -5,6 +5,7 @@ export const INITIAL_BANK_RATES: BankRate[] = [
     id: 'rate-1',
     bankName: 'Santander',
     productName: 'Hipoteca Santander Única',
+    category: 'Hipotecario',
     interestRate: 10.15,
     cat: 12.1,
     commission: 1.0,
@@ -35,6 +36,7 @@ export const INITIAL_BANK_RATES: BankRate[] = [
     id: 'rate-2',
     bankName: 'Banorte',
     productName: 'Hipoteca Fuerte Banorte',
+    category: 'Hipotecario',
     interestRate: 10.25,
     cat: 12.3,
     commission: 1.25,
@@ -65,6 +67,7 @@ export const INITIAL_BANK_RATES: BankRate[] = [
     id: 'rate-3',
     bankName: 'Scotiabank',
     productName: 'Hipoteca Scotiabank 7X',
+    category: 'Hipotecario',
     interestRate: 9.90,
     cat: 11.9,
     commission: 0.0, // Promo especial de verano
@@ -95,6 +98,7 @@ export const INITIAL_BANK_RATES: BankRate[] = [
     id: 'rate-4',
     bankName: 'HSBC',
     productName: 'Hipoteca HSBC Fija Pago Bajo',
+    category: 'Hipotecario',
     interestRate: 10.45,
     cat: 12.6,
     commission: 1.0,
@@ -125,6 +129,7 @@ export const INITIAL_BANK_RATES: BankRate[] = [
     id: 'rate-5',
     bankName: 'Afirme',
     productName: 'Hipoteca Afirme Total',
+    category: 'Hipotecario',
     interestRate: 10.85,
     cat: 13.1,
     commission: 1.5,
@@ -155,6 +160,7 @@ export const INITIAL_BANK_RATES: BankRate[] = [
     id: 'rate-6',
     bankName: 'BBVA',
     productName: 'Hipoteca BBVA Fija',
+    category: 'Hipotecario',
     interestRate: 10.10,
     cat: 12.0,
     commission: 1.0,
@@ -185,6 +191,7 @@ export const INITIAL_BANK_RATES: BankRate[] = [
     id: 'rate-7',
     bankName: 'Banamex',
     productName: 'Hipoteca Citibanamex Perfiles',
+    category: 'Hipotecario',
     interestRate: 10.30,
     cat: 12.4,
     commission: 1.0,
@@ -209,6 +216,126 @@ export const INITIAL_BANK_RATES: BankRate[] = [
       'El proceso de escrituración suele demorar un poco más',
       'Comisión por apertura fija del 1%',
       'Políticas rígidas para ingresos en efectivo de comerciantes'
+    ]
+  },
+  {
+    id: 'rate-8',
+    bankName: 'Scotiabank',
+    productName: 'Crédito Automotriz ScotiaAuto',
+    category: 'Automotriz',
+    interestRate: 12.90,
+    cat: 15.2,
+    commission: 1.5,
+    appraisalCost: 0,
+    lastUpdated: '2026-07-10',
+    source: 'Circular Auto Scotiabank Julio 2026',
+    verifiedBy: 'Mesa de Control CREDIDIEZ',
+    status: 'Validado internamente',
+    trustLevel: 'Alto',
+    requirements: [
+      'Edad de 21 a 65 años',
+      'Ingreso mínimo mensual de $10,000 MXN',
+      'Enganche mínimo del 10% del valor del vehículo',
+      'Plazos flexibles de 12 a 72 meses (1 a 6 años)'
+    ],
+    advantages: [
+      'Tasa fija preferencial para autos nuevos y seminuevos',
+      'Seguro de auto financiado o de contado',
+      'Sin penalización por prepago a capital'
+    ],
+    risks: [
+      'Comisión por apertura del 1.5%',
+      'Requiere obligado solidario si el score de Buró es < 630'
+    ]
+  },
+  {
+    id: 'rate-9',
+    bankName: 'BBVA',
+    productName: 'AutoFinan BBVA',
+    category: 'Automotriz',
+    interestRate: 13.50,
+    cat: 16.0,
+    commission: 1.0,
+    appraisalCost: 0,
+    lastUpdated: '2026-07-08',
+    source: 'Boletín Automotriz BBVA',
+    verifiedBy: 'Gerencia Nacional de Alianzas',
+    status: 'Actualizado',
+    trustLevel: 'Alto',
+    requirements: [
+      'Edad de 18 a 70 años',
+      'Ingreso mínimo mensual de $9,000 MXN',
+      'Antigüedad laboral de 3 meses si recibe nómina BBVA',
+      'Enganche mínimo del 20%'
+    ],
+    advantages: [
+      'Aprobación inmediata en App BBVA o agencia',
+      'Financiamiento de accesorios y extensión de garantía',
+      'Atención digital acelerada'
+    ],
+    risks: [
+      'Seguro de auto obligatorio contratado con Seguros BBVA',
+      'Enganche del 20% no negociable para independientes'
+    ]
+  },
+  {
+    id: 'rate-10',
+    bankName: 'Banorte',
+    productName: 'Auto Banorte Directo',
+    category: 'Automotriz',
+    interestRate: 13.90,
+    cat: 16.5,
+    commission: 1.25,
+    appraisalCost: 0,
+    lastUpdated: '2026-07-05',
+    source: 'Portal Broker Banorte Auto',
+    verifiedBy: 'Control Interno Sede Monterrey',
+    status: 'Actualizado',
+    trustLevel: 'Alto',
+    requirements: [
+      'Edad de 20 a 69 años',
+      'Ingreso mínimo de $12,000 MXN',
+      'Enganche desde el 15%',
+      'Plazos de 12 a 60 meses'
+    ],
+    advantages: [
+      'Descuento especial en tasa si se domicilia el pago',
+      'Acepta comprobación de ingresos mixtos',
+      'Respuesta de dictamen en 24 horas'
+    ],
+    risks: [
+      'Comisión de apertura de 1.25%',
+      'Tasa ligeramente superior para autos seminuevos'
+    ]
+  },
+  {
+    id: 'rate-11',
+    bankName: 'Santander',
+    productName: 'Súper Auto Santander',
+    category: 'Automotriz',
+    interestRate: 14.10,
+    cat: 16.8,
+    commission: 1.0,
+    appraisalCost: 0,
+    lastUpdated: '2026-07-09',
+    source: 'Ficha Técnica Santander Auto',
+    verifiedBy: 'Mesa de Control CREDIDIEZ',
+    status: 'Validado internamente',
+    trustLevel: 'Medio',
+    requirements: [
+      'Edad de 21 a 70 años',
+      'Ingreso mínimo de $10,000 MXN',
+      'Enganche mínimo del 15%',
+      'Score de Buró mínimo de 640'
+    ],
+    advantages: [
+      'Sin costo de administración mensual',
+      'Permite adelantar pagos disminuyendo plazo o mensualidad',
+      'Cobertura amplia de seguro de auto'
+    ],
+    risks: [
+      'Tasa base de 14.10%',
+      'Requiere 12 meses de antigüedad laboral comprobable'
     ]
   }
 ];

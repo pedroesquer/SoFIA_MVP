@@ -35,6 +35,7 @@ export interface SimulatedOffer {
   id: string;
   bankName: string;
   productName: string;
+  category?: 'Hipotecario' | 'Automotriz';
   interestRate: number;
   rateUpdatedDate: string;
   cat: number;
@@ -74,7 +75,7 @@ export interface MortgageFile {
   requestedAmount: number;
   propertyValue: number;
   termYears: number;
-  creditType: string; // e.g. "Adquisición", "Liquidez", "Construcción", "Sustitución de Hipoteca"
+  creditType: string; // e.g. "Adquisición", "Liquidez", "Construcción", "Sustitución de Hipoteca", "Automotriz"
   monthlyIncome: number;
   monthlyExpenses: number;
   otherDebts: number;
@@ -96,6 +97,7 @@ export interface BankRate {
   id: string;
   bankName: string;
   productName: string;
+  category?: 'Hipotecario' | 'Automotriz';
   interestRate: number;
   cat: number;
   commission: number;
